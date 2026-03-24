@@ -12,7 +12,7 @@ async function getRawBody(req) {
     const chunks = [];
     req.on('data', (chunk) => chunks.push(chunk));
     req.on('end', () => resolve(Buffer.concat(chunks)));
-    req.on('error', reject);
+    req.on('error', (err) => reject(new Error(`Failed to read request body: ${err.message}`)));
   });
 }
 

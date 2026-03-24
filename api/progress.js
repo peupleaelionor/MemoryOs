@@ -78,6 +78,7 @@ export default async function handler(req, res) {
 
 /**
  * Calcule le nombre de jours consécutifs d'activité.
+ * Commence à partir d'aujourd'hui ou d'hier (si aujourd'hui n'a pas encore d'activité).
  */
 function calculateStreak(quizResults, moduleProgress) {
   const activityDates = new Set();
@@ -89,15 +90,27 @@ function calculateStreak(quizResults, moduleProgress) {
     activityDates.add(toDateKey(m.completed_at));
   }
 
-  let streak = 0;
   const today = new Date();
+  const todayKey = toDateKey(today.toISOString());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = toDateKey(yesterday.toISOString());
 
-  for (let i = 0; i < 365; i++) {
+  // Si ni aujourd'hui ni hier n'ont d'activité, le streak est rompu
+  if (!activityDates.has(todayKey) && !activityDates.has(yesterdayKey)) {
+    return 0;
+  }
+
+  // Démarre le décompte depuis aujourd'hui (ou hier si aujourd'hui est vide)
+  const startOffset = activityDates.has(todayKey) ? 0 : 1;
+  let streak = 0;
+
+  for (let i = startOffset; i < 365; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     if (activityDates.has(toDateKey(d.toISOString()))) {
       streak++;
-    } else if (i > 0) {
+    } else {
       break;
     }
   }
