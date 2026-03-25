@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/dashboard", "destination": "/app/dashboard/index.html" },
+    { "source": "/chat", "destination": "/app/chat/index.html" },
+    { "source": "/quiz", "destination": "/app/quiz/index.html" },
+    { "source": "/modules", "destination": "/app/modules/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+      ]
+    }
+  ]
+}

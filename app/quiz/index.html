@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Adaptatif — MemoryOS</title>
+  <style>
+    :root {
+      --gold: #f0a500; --gold-light: #ffd166;
+      --dark: #0d0d1a; --dark2: #13132b; --dark3: #1e1e3f;
+      --purple: #6c3fc5; --purple-light: #8b5cf6;
+      --green: #22c55e; --red: #ef4444;
+      --text: #e8e8f0; --text-muted: #9090b0; --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.5rem; background: var(--dark2); border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .back-btn { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color .2s; }
+    .back-btn:hover { color: var(--gold); }
+    .quiz-title { font-weight: 800; font-size: 1rem; }
+    .quiz-progress { font-size: 0.85rem; color: var(--text-muted); }
+
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.5rem; }
+
+    /* Progress bar */
+    .progress-wrap { width: 100%; max-width: 600px; margin-bottom: 2rem; }
+    .prog-bar { background: rgba(255,255,255,0.08); border-radius: 50px; height: 6px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 50px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width .4s ease; }
+    .prog-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; }
+
+    /* Question card */
+    .question-card {
+      width: 100%; max-width: 600px;
+      background: var(--dark2); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--radius); padding: 2rem; margin-bottom: 1.5rem;
+    }
+    .question-meta { font-size: 0.8rem; color: var(--gold); font-weight: 600; margin-bottom: 1rem; }
+    .question-text { font-size: 1.05rem; font-weight: 600; line-height: 1.5; margin-bottom: 1.5rem; }
+
+    .options { display: flex; flex-direction: column; gap: 0.75rem; }
+    .option {
+      display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1rem;
+      background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 10px; cursor: pointer; transition: all .2s; font-size: 0.9rem;
+    }
+    .option:hover:not(.disabled) { border-color: rgba(240,165,0,0.4); background: rgba(240,165,0,0.06); }
+    .option.selected { border-color: var(--gold); background: rgba(240,165,0,0.1); }
+    .option.correct { border-color: var(--green); background: rgba(34,197,94,0.1); }
+    .option.wrong { border-color: var(--red); background: rgba(239,68,68,0.1); }
+    .option.disabled { cursor: default; }
+    .opt-letter {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+    }
+    .option.correct .opt-letter { background: var(--green); }
+    .option.wrong .opt-letter { background: var(--red); }
+    .option.selected:not(.correct):not(.wrong) .opt-letter { background: var(--gold); color: var(--dark); }
+
+    /* Explanation */
+    .explanation {
+      background: rgba(108,63,197,0.12); border: 1px solid rgba(108,63,197,0.25);
+      border-radius: 10px; padding: 1rem 1.25rem; margin-top: 1rem;
+      font-size: 0.9rem; color: var(--text-muted); display: none;
+    }
+    .explanation.show { display: block; }
+    .explanation strong { color: var(--purple-light); }
+
+    /* Next button */
+    #next-btn {
+      width: 100%; max-width: 600px; background: var(--gold); color: var(--dark);
+      border: none; border-radius: var(--radius); padding: 1rem; font-weight: 800;
+      font-size: 1rem; cursor: pointer; transition: background .2s; display: none;
+    }
+    #next-btn.show { display: block; }
+    #next-btn:hover { background: var(--gold-light); }
+
+    /* Results */
+    #results {
+      width: 100%; max-width: 600px; text-align: center; display: none;
+    }
+    .results-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .results-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .results-score { font-size: 3rem; font-weight: 900; color: var(--gold); margin: 1rem 0; }
+    .results-msg { color: var(--text-muted); margin-bottom: 2rem; }
+    .results-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { background: var(--gold); color: var(--dark); font-weight: 800; padding: 0.85rem 2rem; border-radius: var(--radius); text-decoration: none; border: none; cursor: pointer; font-size: 0.95rem; }
+    .btn-outline { background: transparent; border: 2px solid rgba(240,165,0,0.3); color: var(--gold); font-weight: 700; padding: 0.85rem 2rem; border-radius: var(--radius); text-decoration: none; font-size: 0.95rem; cursor: pointer; }
+
+    /* Loading */
+    #loading { text-align: center; color: var(--text-muted); padding: 3rem; }
+    .spinner { font-size: 2rem; animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/dashboard" class="back-btn">← Dashboard</a>
+  <div class="quiz-title">🧩 Quiz Adaptatif</div>
+  <div class="quiz-progress" id="header-progress">—</div>
+</header>
+
+<main>
+  <div id="loading">
+    <div class="spinner">⟳</div>
+    <p style="margin-top: 1rem;">Chargement du quiz…</p>
+  </div>
+
+  <div class="progress-wrap" id="progress-wrap" style="display:none;">
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-labels">
+      <span id="prog-label-left">Question 1</span>
+      <span id="prog-label-right">0 / 10</span>
+    </div>
+  </div>
+
+  <div class="question-card" id="question-card" style="display:none;">
+    <div class="question-meta" id="q-meta">Module 1</div>
+    <div class="question-text" id="q-text">Chargement…</div>
+    <div class="options" id="q-options"></div>
+    <div class="explanation" id="q-explanation"></div>
+  </div>
+
+  <button id="next-btn" onclick="nextQuestion()">Question suivante →</button>
+
+  <div id="results">
+    <div class="results-icon" id="results-icon">🏆</div>
+    <div class="results-title">Quiz terminé !</div>
+    <div class="results-score" id="results-score">0/10</div>
+    <div class="results-msg" id="results-msg">Chargement…</div>
+    <div class="results-actions">
+      <button class="btn-primary" onclick="restartQuiz()">🔄 Rejouer</button>
+      <a href="/dashboard" class="btn-outline">📊 Dashboard</a>
+      <a href="/chat" class="btn-outline">🤖 Coach IA</a>
+    </div>
+  </div>
+</main>
+
+<script>
+  let questions = [];
+  let current = 0;
+  let score = 0;
+  let answered = false;
+
+  const userId = localStorage.getItem('memoryos_user_id');
+  const params = new URLSearchParams(location.search);
+  const moduleFilter = params.get('module') || '';
+
+  async function loadQuiz() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('question-card').style.display = 'none';
+    document.getElementById('progress-wrap').style.display = 'none';
+
+    try {
+      let url = '/api/quiz';
+      const qp = [];
+      if (userId) qp.push(`userId=${userId}`);
+      if (moduleFilter) qp.push(`module=${moduleFilter}`);
+      if (qp.length) url += '?' + qp.join('&');
+
+      const res = await fetch(url);
+      const data = await res.json();
+      questions = data.questions || [];
+
+      if (questions.length === 0) {
+        document.getElementById('loading').innerHTML = '<p>Aucune question disponible.</p>';
+        return;
+      }
+
+      current = 0; score = 0;
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('progress-wrap').style.display = 'block';
+      document.getElementById('question-card').style.display = 'block';
+
+      renderQuestion();
+    } catch (e) {
+      document.getElementById('loading').innerHTML = '<p>Erreur de chargement. <a href="" style="color:var(--gold)">Réessayer</a></p>';
+    }
+  }
+
+  function renderQuestion() {
+    if (current >= questions.length) { showResults(); return; }
+
+    answered = false;
+    const q = questions[current];
+    const total = questions.length;
+
+    // Progress
+    const pct = (current / total) * 100;
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('prog-label-left').textContent = `Question ${current + 1}`;
+    document.getElementById('prog-label-right').textContent = `${current} / ${total}`;
+    document.getElementById('header-progress').textContent = `${current + 1}/${total}`;
+
+    document.getElementById('q-meta').textContent = `Module ${q.module}`;
+    document.getElementById('q-text').textContent = q.question;
+
+    const opts = document.getElementById('q-options');
+    const letters = ['A', 'B', 'C', 'D'];
+    opts.innerHTML = q.options.map((opt, i) => `
+      <div class="option" id="opt-${i}" onclick="selectOption(${i})">
+        <div class="opt-letter">${letters[i]}</div>
+        <span>${opt}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('q-explanation').classList.remove('show');
+    document.getElementById('q-explanation').innerHTML = '';
+    document.getElementById('next-btn').classList.remove('show');
+  }
+
+  async function selectOption(index) {
+    if (answered) return;
+    answered = true;
+
+    const opts = document.querySelectorAll('.option');
+    opts.forEach(o => o.classList.add('disabled'));
+
+    const q = questions[current];
+
+    try {
+      const res = await fetch('/api/quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          questionId: q.id,
+          answer: index,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.correct) {
+        score++;
+        document.getElementById(`opt-${index}`).classList.add('correct');
+      } else {
+        document.getElementById(`opt-${index}`).classList.add('wrong');
+        document.getElementById(`opt-${data.correctAnswer}`).classList.add('correct');
+      }
+
+      const expl = document.getElementById('q-explanation');
+      expl.innerHTML = `<strong>${data.correct ? '✅ Bonne réponse !' : '❌ Incorrect.'}</strong> ${data.explanation}`;
+      expl.classList.add('show');
+
+    } catch {
+      // Fallback sans serveur
+      document.getElementById(`opt-${index}`).classList.add('selected');
+    }
+
+    document.getElementById('next-btn').classList.add('show');
+  }
+
+  function nextQuestion() {
+    current++;
+    if (current >= questions.length) {
+      showResults();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function showResults() {
+    document.getElementById('question-card').style.display = 'none';
+    document.getElementById('progress-wrap').style.display = 'none';
+    document.getElementById('next-btn').classList.remove('show');
+    document.getElementById('results').style.display = 'block';
+
+    const total = questions.length;
+    const pct = Math.round((score / total) * 100);
+
+    document.getElementById('results-score').textContent = `${score}/${total}`;
+    document.getElementById('prog-fill').style.width = '100%';
+
+    let icon = '🏆'; let msg = '';
+    if (pct >= 90) { icon = '🌟'; msg = 'Excellent ! Tu maîtrises parfaitement ces notions !'; }
+    else if (pct >= 70) { icon = '🎯'; msg = 'Très bien ! Continue comme ça, tu progresses rapidement.'; }
+    else if (pct >= 50) { icon = '📈'; msg = 'Pas mal ! Revois les modules concernés pour consolider.'; }
+    else { icon = '💪'; msg = 'C\'est un début ! La répétition espacée va t\'aider à progresser.'; }
+
+    document.getElementById('results-icon').textContent = icon;
+    document.getElementById('results-msg').textContent = msg;
+    document.getElementById('header-progress').textContent = `${pct}%`;
+  }
+
+  function restartQuiz() {
+    document.getElementById('results').style.display = 'none';
+    loadQuiz();
+  }
+
+  loadQuiz();
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modules — MemoryOS</title>
+  <style>
+    :root {
+      --gold: #f0a500; --gold-light: #ffd166;
+      --dark: #0d0d1a; --dark2: #13132b; --dark3: #1e1e3f;
+      --purple: #6c3fc5; --purple-light: #8b5cf6;
+      --green: #22c55e;
+      --text: #e8e8f0; --text-muted: #9090b0; --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; }
+
+    header {
+      display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem;
+      background: var(--dark2); border-bottom: 1px solid rgba(255,255,255,0.07); position: sticky; top: 0; z-index: 10;
+    }
+    .back-btn { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color .2s; }
+    .back-btn:hover { color: var(--gold); }
+    h1 { font-size: 1.1rem; font-weight: 800; }
+
+    /* Module list view */
+    #modules-list { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
+    .modules-header { margin-bottom: 1.5rem; }
+    .modules-header h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .modules-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+    .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+    .module-card {
+      background: var(--dark2); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--radius); padding: 1.25rem; cursor: pointer;
+      transition: all .2s; position: relative; overflow: hidden;
+    }
+    .module-card:hover { border-color: rgba(240,165,0,0.3); transform: translateY(-2px); }
+    .module-card.completed { border-color: rgba(34,197,94,0.3); }
+    .module-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light)); opacity: 0; transition: opacity .2s;
+    }
+    .module-card:hover::before { opacity: 1; }
+    .module-card.completed::before { opacity: 1; background: linear-gradient(90deg, var(--green), #86efac); }
+    .mod-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .mod-num { font-size: 0.75rem; color: var(--gold); font-weight: 700; }
+    .mod-done { color: var(--green); font-size: 0.85rem; }
+    .mod-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .mod-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.75rem; }
+    .mod-footer { display: flex; justify-content: space-between; align-items: center; }
+    .mod-time { font-size: 0.75rem; color: var(--text-muted); }
+    .mod-start { font-size: 0.8rem; color: var(--gold); font-weight: 700; }
+
+    /* Module detail view */
+    #module-detail { display: none; max-width: 720px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+    .detail-back { color: var(--text-muted); cursor: pointer; font-size: 0.9rem; margin-bottom: 1.5rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .detail-back:hover { color: var(--gold); }
+    .detail-meta { font-size: 0.8rem; color: var(--gold); font-weight: 700; margin-bottom: 0.5rem; }
+    .detail-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 1rem; }
+    .detail-time { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.05); border-radius: 50px; padding: 0.3rem 0.8rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2rem; }
+
+    .detail-content h3 { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin: 1.75rem 0 0.75rem; }
+    .detail-content p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 0.75rem; }
+    .detail-content ul { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; padding-left: 1.25rem; margin-bottom: 0.75rem; }
+    .detail-content li { margin-bottom: 0.3rem; }
+    .detail-content strong { color: var(--text); }
+
+    .tip-box {
+      background: rgba(240,165,0,0.08); border: 1px solid rgba(240,165,0,0.2);
+      border-radius: 10px; padding: 1rem 1.25rem; margin: 1.25rem 0;
+    }
+    .tip-box .tip-label { color: var(--gold); font-weight: 700; font-size: 0.8rem; margin-bottom: 0.4rem; }
+    .tip-box p { color: var(--text); font-size: 0.9rem; margin: 0; }
+
+    .complete-btn {
+      display: block; width: 100%; background: var(--gold); color: var(--dark);
+      border: none; border-radius: var(--radius); padding: 1rem; font-weight: 800;
+      font-size: 1rem; cursor: pointer; margin-top: 2rem; transition: background .2s;
+    }
+    .complete-btn:hover { background: var(--gold-light); }
+    .complete-btn.done { background: var(--green); }
+    .quiz-link {
+      display: block; width: 100%; text-align: center; margin-top: 0.75rem;
+      background: rgba(108,63,197,0.15); border: 1px solid rgba(108,63,197,0.25);
+      color: var(--purple-light); border-radius: var(--radius); padding: 0.85rem;
+      font-weight: 700; font-size: 0.9rem; text-decoration: none; transition: all .2s;
+    }
+    .quiz-link:hover { background: rgba(108,63,197,0.25); }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/dashboard" class="back-btn">← Dashboard</a>
+  <h1>📚 Modules</h1>
+</header>
+
+<!-- List view -->
+<div id="modules-list">
+  <div class="modules-header">
+    <h2>16 modules scientifiques</h2>
+    <p>Chaque module couvre une technique de mémorisation validée par la neuroscience.</p>
+  </div>
+  <div class="module-grid" id="module-grid"></div>
+</div>
+
+<!-- Detail view -->
+<div id="module-detail">
+  <div class="detail-back" onclick="showList()">← Tous les modules</div>
+  <div class="detail-meta" id="detail-meta">MODULE 01</div>
+  <div class="detail-title" id="detail-title">Bases de la mémoire</div>
+  <div class="detail-time">⏱ ~15 minutes</div>
+  <div class="detail-content" id="detail-content"></div>
+  <button class="complete-btn" id="complete-btn" onclick="completeModule()">✓ Marquer comme complété</button>
+  <a class="quiz-link" id="quiz-link" href="/quiz">🧩 Tester mes connaissances sur ce module</a>
+</div>
+
+<script>
+const MODULES = [
+  {
+    id: 1, title: 'Bases de la mémoire', icon: '🧠',
+    desc: 'Comprendre comment fonctionne la mémoire à court et long terme.',
+    content: `
+      <h3>Les types de mémoire</h3>
+      <p>La mémoire humaine n'est pas un système unique. On distingue principalement :</p>
+      <ul>
+        <li><strong>Mémoire à court terme (MCT)</strong> : retient 7 ± 2 éléments pendant ~20 secondes</li>
+        <li><strong>Mémoire à long terme (MLT)</strong> : stockage illimité en durée et capacité</li>
+        <li><strong>Mémoire de travail</strong> : manipulation active des informations</li>
+      </ul>
+      <h3>La courbe d'oubli d'Ebbinghaus</h3>
+      <p>Hermann Ebbinghaus (1885) a découvert qu'on oublie environ <strong>70% des informations dans les 24 premières heures</strong> sans révision. La bonne nouvelle ? La répétition espacée inverse complètement cette tendance.</p>
+      <div class="tip-box">
+        <div class="tip-label">💡 Exercice immédiat</div>
+        <p>Lis 10 mots au hasard, ferme les yeux et récite-les. Combien tu retiens ? C'est ta mémoire à court terme en action.</p>
+      </div>
+      <h3>L'encodage : la clé de la mémorisation</h3>
+      <p>Une information est mieux retenue quand elle est encodée de façon <strong>profonde</strong> (sens, émotion, contexte) plutôt que superficielle (répétition mécanique).</p>
+    `
+  },
+  {
+    id: 2, title: 'Répétition espacée', icon: '🔄',
+    desc: 'Maîtriser l\'algorithme naturel du cerveau pour tout retenir.',
+    content: `
+      <h3>Le principe</h3>
+      <p>La répétition espacée exploite le <strong>"spacing effect"</strong> : réviser une information à des intervalles croissants est beaucoup plus efficace que de la relire plusieurs fois d'affilée.</p>
+      <h3>Le calendrier optimal</h3>
+      <ul>
+        <li>1ère révision : <strong>J+1</strong> (lendemain)</li>
+        <li>2ème révision : <strong>J+7</strong> (1 semaine)</li>
+        <li>3ème révision : <strong>J+30</strong> (1 mois)</li>
+        <li>4ème révision : <strong>J+90</strong> (3 mois)</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Application pratique</div>
+        <p>Utilise les quiz MemoryOS quotidiennement. L'algorithme calcule automatiquement quelles questions revoir et quand.</p>
+      </div>
+      <h3>Pourquoi ça fonctionne ?</h3>
+      <p>Chaque révision renforce les connexions synaptiques. Le "testing effect" montre que se <em>rappeler</em> d'une info est plus efficace que de la <em>relire</em>.</p>
+    `
+  },
+  {
+    id: 3, title: 'Palais de mémoire', icon: '🏛️',
+    desc: 'La technique des champions de mémorisation mondiale.',
+    content: `
+      <h3>Qu'est-ce que c'est ?</h3>
+      <p>Le <strong>palais de mémoire</strong> (ou méthode des loci) consiste à placer mentalement des informations dans des endroits familiers d'un lieu bien connu (ta maison, ton trajet quotidien…).</p>
+      <h3>Comment construire ton palais</h3>
+      <ul>
+        <li>Choisis un lieu que tu connais parfaitement (ton appartement)</li>
+        <li>Définis un parcours fixe avec 10-15 "stations"</li>
+        <li>Associe chaque info à une station avec une image vivante</li>
+        <li>Pour rappeler : parcours mentalement le chemin</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Exercice immédiat</div>
+        <p>Liste 5 stations de chez toi (porte d'entrée, canapé, cuisine…). Place-y mentalement les 5 planètes du système solaire. Ferme les yeux et parcours le chemin.</p>
+      </div>
+      <h3>La puissance des images absurdes</h3>
+      <p>Plus l'image associée est <strong>bizarre, drôle, ou exagérée</strong>, plus elle est facile à retenir. Notre cerveau est câblé pour remarquer ce qui sort de l'ordinaire.</p>
+    `
+  },
+  {
+    id: 4, title: 'Mnémoniques', icon: '🔤',
+    desc: 'Acronymes, acrostiches et associations pour tout retenir.',
+    content: `
+      <h3>Les types de mnémoniques</h3>
+      <ul>
+        <li><strong>Acronymes</strong> : VIBUJOR = Violet, Indigo, Bleu, Vert, Jaune, Orange, Rouge</li>
+        <li><strong>Acrostiches</strong> : "Mon Vieux Tu M'as Jeté Sur Une Nouvelle Planète" = planètes</li>
+        <li><strong>Rimes et chansons</strong> : associer du texte à une mélodie connue</li>
+        <li><strong>Histoires enchaînées</strong> : créer une narration qui relie les éléments</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Exercice immédiat</div>
+        <p>Crée un acronyme pour mémoriser les 5 étapes de la méthode SMART (Spécifique, Mesurable, Atteignable, Réaliste, Temporel).</p>
+      </div>
+      <h3>La méthode des substituts sonores</h3>
+      <p>Pour retenir un mot étranger, trouve un mot français qui sonne pareil et crée une image mentale. Ex : "cat" (chat) → image d'un <em>cadenas</em> en forme de chat.</p>
+    `
+  },
+  {
+    id: 5, title: 'Chunking', icon: '🧩',
+    desc: 'Regrouper l\'information pour démultiplier ta capacité.',
+    content: `
+      <h3>Le principe du chunking</h3>
+      <p>Notre mémoire de travail ne peut retenir que <strong>7 ± 2 "chunks"</strong> (George Miller, 1956). Un chunk peut être un chiffre isolé OU un groupe de chiffres familier. Le chunking consiste à créer des groupes significatifs.</p>
+      <h3>Exemples pratiques</h3>
+      <ul>
+        <li>Numéro de téléphone : 0612345678 → 06 12 34 56 78</li>
+        <li>Dates : 14071789 → 14/07/1789 (Bastille)</li>
+        <li>Vocabulaire : regrouper par thème, pas alphabétiquement</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Exercice immédiat</div>
+        <p>Mémorise cette suite : 195319691989. Difficile ? Essaie : 1953 (mort de Staline) / 1969 (Lune) / 1989 (Mur de Berlin). Le sens crée les chunks.</p>
+      </div>
+    `
+  },
+  {
+    id: 6, title: 'Sommeil & mémoire', icon: '😴',
+    desc: 'Optimiser son sommeil pour consolider les apprentissages.',
+    content: `
+      <h3>La consolidation nocturne</h3>
+      <p>Pendant le sommeil, l'hippocampe <strong>rejoue les souvenirs de la journée</strong> et les transfère vers le néocortex pour un stockage durable. C'est le processus de consolidation mémorielle.</p>
+      <h3>Les phases clés</h3>
+      <ul>
+        <li><strong>Sommeil profond (N3)</strong> : consolidation des faits et concepts</li>
+        <li><strong>Sommeil paradoxal (REM)</strong> : consolidation procédurale et émotionnelle</li>
+        <li>Un cycle complet dure ~90 minutes</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Conseil pratique</div>
+        <p>Révise les notions importantes dans l'heure avant de dormir. Et dors au moins 7-8h : la dernière heure de sommeil est riche en REM.</p>
+      </div>
+      <h3>La sieste "power nap"</h3>
+      <p>Une sieste de 20-30 minutes améliore la consolidation mémorielle de <strong>20-40%</strong> selon des études de la NASA et de Harvard.</p>
+    `
+  },
+  {
+    id: 7, title: 'Nutrition & cerveau', icon: '🥑',
+    desc: 'Les nutriments qui boostent réellement la mémoire.',
+    content: `
+      <h3>Les champions de la mémoire</h3>
+      <ul>
+        <li><strong>DHA (Oméga-3)</strong> : composant des membranes neuronales. Poissons gras, noix.</li>
+        <li><strong>Antioxydants</strong> : protègent contre le stress oxydatif. Myrtilles, curcuma.</li>
+        <li><strong>Choline</strong> : précurseur de l'acétylcholine (neurotransmetteur). Œufs, foie.</li>
+        <li><strong>Magnésium</strong> : facilite la plasticité synaptique. Amandes, épinards.</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Conseil simple</div>
+        <p>Mange 1 poignée de noix et 1 œuf par jour. C'est la "dose minimale efficace" pour ta mémoire. Remplace les sucres rapides par des fruits à IG bas.</p>
+      </div>
+      <h3>Les ennemis de la mémoire</h3>
+      <p>Alcool, sucre raffiné, manque de fer et déshydratation diminuent significativement les performances cognitives. <strong>Boire 2L d'eau par jour</strong> est l'une des mesures les plus simples et les plus sous-estimées.</p>
+    `
+  },
+  {
+    id: 8, title: 'Stress & mémoire', icon: '🧘',
+    desc: 'Comprendre et contrôler l\'impact du stress sur le cerveau.',
+    content: `
+      <h3>Le paradoxe du stress</h3>
+      <p>Un stress <strong>modéré et temporaire</strong> améliore la mémorisation (adrénaline + noradrénaline renforcent l'encodage). Mais un stress <strong>chronique</strong> détruit les neurones hippocampaux via le cortisol.</p>
+      <h3>Techniques anti-stress pour la mémoire</h3>
+      <ul>
+        <li><strong>Respiration 4-7-8</strong> : inspire 4s, retiens 7s, expire 8s</li>
+        <li><strong>Cohérence cardiaque</strong> : 5 min matin + soir</li>
+        <li><strong>Pleine conscience</strong> : 10 min de méditation augmentent la densité de matière grise</li>
+        <li><strong>Exercice</strong> : 30 min de cardio réduit le cortisol de 26%</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Avant un examen</div>
+        <p>5 minutes de respiration abdominale lente suffisent à réduire l'anxiété et améliorer le rappel mémoriel. Essaie avant chaque session de quiz.</p>
+      </div>
+    `
+  },
+  {
+    id: 9, title: 'Mémoire des noms', icon: '👤',
+    desc: 'Ne plus jamais oublier un prénom ou un nom.',
+    content: `
+      <h3>Pourquoi on oublie les noms</h3>
+      <p>On oublie les noms car on ne les <strong>encode pas profondément</strong> lors de la première rencontre. On est focalisé sur l'impression qu'on fait, pas sur la personne.</p>
+      <h3>La méthode en 3 étapes</h3>
+      <ul>
+        <li><strong>Répéter</strong> : "Enchanté Thomas !" dès la présentation</li>
+        <li><strong>Associer</strong> : lier le prénom à un trait physique ou une célébrité</li>
+        <li><strong>Visualiser</strong> : créer une image mentale absurde qui unit nom + visage</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Exemples</div>
+        <p>"Marie" avec des grands yeux → imagine des <em>marées</em> dans ses yeux. "Victor" avec une moustache → <em>Victor Hugo</em> avec la même moustache.</p>
+      </div>
+      <h3>Pour les noms de famille</h3>
+      <p>Utilise la méthode des <strong>substituts sonores</strong> : Dupont → un pont double. Martin → une mar(t)ine (insecte). Plus l'image est précise, mieux c'est.</p>
+    `
+  },
+  {
+    id: 10, title: 'Mémoire des chiffres', icon: '🔢',
+    desc: 'Retenir numéros de téléphone, codes, dates facilement.',
+    content: `
+      <h3>Le Major System</h3>
+      <p>Le Major System convertit les chiffres en <strong>sons consonantiques</strong>, puis en mots, puis en images. Exemple :</p>
+      <ul>
+        <li>0 = S/Z, 1 = T/D, 2 = N, 3 = M, 4 = R, 5 = L, 6 = J/CH, 7 = K/G, 8 = F/V, 9 = P/B</li>
+      </ul>
+      <p>42 → R+N → "Rain" (pluie) → image d'une pluie pour retenir le 42.</p>
+      <div class="tip-box">
+        <div class="tip-label">💡 Pour les débutants</div>
+        <p>Commence par le chunking : découpe ton code en groupes de 2-3. 347821 → 34-78-21 → "Alain Delon (34) était célèbre en 78, né en 21". Le sens crée la mémoire.</p>
+      </div>
+      <h3>La méthode des mains</h3>
+      <p>Pour les chiffres 1-10, associe chaque chiffre à une image personnelle fixe (1 = crayon, 2 = cygne, 3 = fesses…). Une fois maîtrisée, cette table de 10 te permet de tout retenir.</p>
+    `
+  },
+  {
+    id: 11, title: 'Mémoire visuelle', icon: '👁️',
+    desc: 'Exploiter la puissance extraordinaire de la mémoire des images.',
+    content: `
+      <h3>La supériorité des images</h3>
+      <p>Notre cerveau retient les images <strong>beaucoup mieux</strong> que les mots (Paivio, "théorie du double codage"). Une image active plus de zones cérébrales simultanément.</p>
+      <h3>Techniques visuelles</h3>
+      <ul>
+        <li><strong>Surbrillance mentale</strong> : "photographie" mentalement ce que tu veux retenir</li>
+        <li><strong>Cartes mentales (mind maps)</strong> : représentation visuelle arborescente</li>
+        <li><strong>Schémas et diagrammes</strong> : convertir le texte en visuel</li>
+        <li><strong>Couleurs</strong> : coder par couleur les catégories d'information</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Exercice</div>
+        <p>Quand tu lis un texte, pause-toi après chaque paragraphe et visualise une scène qui le représente. Tes notes deviendront des films mentaux.</p>
+      </div>
+    `
+  },
+  {
+    id: 12, title: 'Mind mapping', icon: '🗺️',
+    desc: 'Organiser et retenir n\'importe quelle quantité d\'information.',
+    content: `
+      <h3>Qu'est-ce qu'un mind map ?</h3>
+      <p>Une carte mentale part d'un <strong>concept central</strong> et se ramifie en branches thématiques, sous-branches, mots-clés et images. Elle imite la structure réticulaire naturelle du cerveau.</p>
+      <h3>Règles d'une bonne carte mentale</h3>
+      <ul>
+        <li>1 mot-clé par branche (pas de phrases)</li>
+        <li>Utilise des couleurs différentes par branche principale</li>
+        <li>Ajoute des petits dessins et icônes</li>
+        <li>Les branches courbes sont plus naturelles que les droites</li>
+        <li>Centre en gros, branches en plus petit</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Outil gratuit</div>
+        <p>Essaie Xmind, MindMeister ou simplement une feuille A3 en paysage. L'outil importe peu, l'habitude de structurer visuellement est la clé.</p>
+      </div>
+    `
+  },
+  {
+    id: 13, title: 'Apprentissage actif', icon: '✍️',
+    desc: 'La méthode Feynman et autres techniques qui décuplent la rétention.',
+    content: `
+      <h3>La pyramide d'apprentissage</h3>
+      <p>Selon les recherches sur la rétention (National Training Laboratories) :</p>
+      <ul>
+        <li>Lecture : ~10% de rétention</li>
+        <li>Audio/Vidéo : ~20%</li>
+        <li>Démonstration : ~30%</li>
+        <li>Discussion : ~50%</li>
+        <li>Pratique : ~75%</li>
+        <li><strong>Enseigner à d'autres : ~90%</strong></li>
+      </ul>
+      <h3>La technique Feynman</h3>
+      <p>Explique ce que tu as appris <strong>comme si tu l'enseignais à un enfant de 12 ans</strong>. Là où tu butes, tu trouves les lacunes à combler.</p>
+      <div class="tip-box">
+        <div class="tip-label">💡 Mise en pratique</div>
+        <p>Après chaque module, ferme la page et explique le contenu à voix haute (ou par écrit). C'est inconfortable au début, mais c'est le signal que ton cerveau travaille vraiment.</p>
+      </div>
+    `
+  },
+  {
+    id: 14, title: 'Exercice physique', icon: '🏃',
+    desc: 'Comment l\'activité physique transforme littéralement ton cerveau.',
+    content: `
+      <h3>Le BDNF : engrais du cerveau</h3>
+      <p>L'exercice aérobique déclenche la production de <strong>BDNF</strong> (Brain-Derived Neurotrophic Factor), une protéine qui stimule la croissance de nouveaux neurones dans l'hippocampe — le centre de la mémoire.</p>
+      <h3>Les effets mesurés</h3>
+      <ul>
+        <li>30 min de cardio modéré → +20% de performances cognitives</li>
+        <li>Exercice régulier → hippocampe plus volumineux (Ériksson et al.)</li>
+        <li>Marche rapide 10 min avant d'apprendre → meilleure consolidation</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 Le "brain hack" du matin</div>
+        <p>20-30 minutes de cardio le matin (même une marche rapide) avant tes sessions d'apprentissage. Le BDNF peak dure 2-4 heures après l'effort.</p>
+      </div>
+      <h3>Yoga et pleine conscience</h3>
+      <p>Même la marche en pleine conscience et le yoga génèrent du BDNF et réduisent le cortisol. L'intensité n'est pas obligatoire — <strong>la régularité est tout</strong>.</p>
+    `
+  },
+  {
+    id: 15, title: 'Techniques avancées', icon: '⚡',
+    desc: 'SRS, méthode PAO, élaboration interrogative et autres outils de champion.',
+    content: `
+      <h3>L'élaboration interrogative</h3>
+      <p>Se poser des <strong>"Pourquoi ?" et "Comment ?"</strong> sur le contenu appris force le cerveau à connecter la nouvelle information à des connaissances existantes, créant ainsi des ancres durables.</p>
+      <h3>La méthode PAO (Person-Action-Object)</h3>
+      <p>Utilisée par les champions de mémorisation pour retenir des centaines de chiffres. Chaque paire de chiffres (00-99) est associée à une personne + une action + un objet.</p>
+      <h3>Le SRS (Spaced Repetition System)</h3>
+      <p>Applications comme Anki ou les quiz MemoryOS implémentent l'algorithme SM-2. 15 min/jour avec SRS > 2h de révision classique.</p>
+      <div class="tip-box">
+        <div class="tip-label">💡 Le testing effect</div>
+        <p>Se rappeler activement d'une information est 2× plus efficace que de la relire. C'est pourquoi les quiz MemoryOS sont la pratique centrale de la plateforme.</p>
+      </div>
+    `
+  },
+  {
+    id: 16, title: "Plan d'entraînement", icon: '📅',
+    desc: 'Ton programme sur 30 jours pour des résultats mesurables.',
+    content: `
+      <h3>Le plan 15 min / jour</h3>
+      <ul>
+        <li><strong>5 min</strong> : Quiz adaptatif (révision espacée)</li>
+        <li><strong>5 min</strong> : Nouveau contenu (1 module)</li>
+        <li><strong>5 min</strong> : Coach IA (questions, exercices pratiques)</li>
+      </ul>
+      <h3>Progression sur 30 jours</h3>
+      <ul>
+        <li><strong>Semaine 1</strong> : Bases + Répétition espacée + Palais de mémoire</li>
+        <li><strong>Semaine 2</strong> : Mnémoniques + Chunking + Sommeil + Nutrition</li>
+        <li><strong>Semaine 3</strong> : Noms + Chiffres + Visuel + Mind mapping</li>
+        <li><strong>Semaine 4</strong> : Apprentissage actif + Exercice + Techniques avancées</li>
+      </ul>
+      <div class="tip-box">
+        <div class="tip-label">💡 La règle des 66 jours</div>
+        <p>Une habitude se forme en moyenne en 66 jours (Lally et al., UCL). Vise 66 jours consécutifs dans MemoryOS. Après ça, l'entraînement mémoire devient automatique.</p>
+      </div>
+      <h3>Comment mesurer les progrès</h3>
+      <p>Ton <strong>score global MemoryOS</strong> dans le dashboard mesure : précision quiz (40%) + modules complétés (40%) + streak (20%). Un score > 80 = maîtrise solide.</p>
+    `
+  },
+];
+
+const completedModules = new Set(
+  JSON.parse(localStorage.getItem('memoryos_completed_modules') || '[]')
+);
+
+let currentModule = null;
+let moduleStartTime = null;
+
+function renderModuleGrid() {
+  const grid = document.getElementById('module-grid');
+  grid.innerHTML = MODULES.map(m => `
+    <div class="module-card ${completedModules.has(m.id) ? 'completed' : ''}" onclick="showModule(${m.id})">
+      <div class="mod-header">
+        <div class="mod-num">MODULE ${String(m.id).padStart(2,'0')}</div>
+        ${completedModules.has(m.id) ? '<div class="mod-done">✓ Complété</div>' : ''}
+      </div>
+      <div class="mod-title">${m.icon} ${m.title}</div>
+      <div class="mod-desc">${m.desc}</div>
+      <div class="mod-footer">
+        <div class="mod-time">⏱ ~15 min</div>
+        <div class="mod-start">${completedModules.has(m.id) ? 'Revoir →' : 'Commencer →'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showModule(id) {
+  const mod = MODULES.find(m => m.id === id);
+  if (!mod) return;
+  currentModule = mod;
+  moduleStartTime = Date.now();
+
+  document.getElementById('modules-list').style.display = 'none';
+  document.getElementById('module-detail').style.display = 'block';
+
+  document.getElementById('detail-meta').textContent = `MODULE ${String(mod.id).padStart(2,'0')}`;
+  document.getElementById('detail-title').textContent = `${mod.icon} ${mod.title}`;
+  document.getElementById('detail-content').innerHTML = mod.content;
+  document.getElementById('quiz-link').href = `/quiz?module=${mod.id}`;
+
+  const btn = document.getElementById('complete-btn');
+  if (completedModules.has(mod.id)) {
+    btn.textContent = '✓ Module complété';
+    btn.classList.add('done');
+  } else {
+    btn.textContent = '✓ Marquer comme complété';
+    btn.classList.remove('done');
+  }
+
+  window.scrollTo(0, 0);
+
+  // Check URL param
+  const params = new URLSearchParams(location.search);
+  history.pushState({}, '', `/modules?id=${mod.id}`);
+}
+
+function showList() {
+  document.getElementById('module-detail').style.display = 'none';
+  document.getElementById('modules-list').style.display = 'block';
+  history.pushState({}, '', '/modules');
+}
+
+async function completeModule() {
+  if (!currentModule) return;
+  const timeSpent = Math.round((Date.now() - moduleStartTime) / 1000);
+
+  completedModules.add(currentModule.id);
+  localStorage.setItem('memoryos_completed_modules', JSON.stringify([...completedModules]));
+
+  const btn = document.getElementById('complete-btn');
+  btn.textContent = '✓ Module complété';
+  btn.classList.add('done');
+
+  renderModuleGrid();
+
+  const userId = localStorage.getItem('memoryos_user_id');
+  if (userId) {
+    try {
+      await fetch('/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, moduleId: currentModule.id, timeSpent }),
+      });
+    } catch { /* silent */ }
+  }
+}
+
+// Init
+const params = new URLSearchParams(location.search);
+renderModuleGrid();
+if (params.get('id')) {
+  const id = parseInt(params.get('id'));
+  if (id >= 1 && id <= 16) showModule(id);
+}
+</script>
+</body>
+</html>
