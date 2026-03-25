@@ -283,9 +283,36 @@
     }
     #chat-win-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* ── HAMBURGER MENU (mobile) ── */
+    .hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      flex-direction: column; gap: 5px; padding: 4px; z-index: 110;
+    }
+    .hamburger span {
+      display: block; width: 24px; height: 2px; background: var(--text);
+      border-radius: 2px; transition: transform .3s, opacity .3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 680px) {
-      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .nav-links {
+        display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(13,13,26,0.97); flex-direction: column;
+        align-items: center; justify-content: center; gap: 2.5rem; z-index: 105;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { font-size: 1.2rem; }
       .hero-stats { gap: 1.5rem; }
       #chat-window { width: 300px; }
     }
@@ -296,11 +323,15 @@
 <!-- Navigation -->
 <nav>
   <div class="nav-logo">Memory<span>OS</span></div>
-  <ul class="nav-links">
-    <li><a href="#features">Fonctionnalités</a></li>
-    <li><a href="#modules">Modules</a></li>
-    <li><a href="#pricing">Tarifs</a></li>
-    <li><a href="#faq">FAQ</a></li>
+  <!-- Menu hamburger mobile -->
+  <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#features" onclick="closeMenu()">Fonctionnalités</a></li>
+    <li><a href="#modules" onclick="closeMenu()">Modules</a></li>
+    <li><a href="#pricing" onclick="closeMenu()">Tarifs</a></li>
+    <li><a href="#faq" onclick="closeMenu()">FAQ</a></li>
   </ul>
   <a href="/dashboard" class="nav-cta">Commencer gratuit →</a>
 </nav>
@@ -335,7 +366,7 @@
 </section>
 
 <!-- Features -->
-<section id="features">
+<section id="features" class="reveal">
   <div class="container">
     <div class="section-tag">Fonctionnalités</div>
     <h2>Tout ce dont tu as besoin pour <span class="accent">booster ta mémoire</span></h2>
@@ -376,7 +407,7 @@
 </section>
 
 <!-- Modules -->
-<section id="modules" style="background: var(--dark2);">
+<section id="modules" class="reveal" style="background: var(--dark2);">
   <div class="container">
     <div class="section-tag">Programme</div>
     <h2>16 modules basés sur la <span class="accent">science</span></h2>
@@ -403,7 +434,7 @@
 </section>
 
 <!-- Chat Preview -->
-<section class="chat-section" style="background: var(--dark);">
+<section class="chat-section reveal" style="background: var(--dark);">
   <div class="container" style="display: flex; gap: 4rem; align-items: center; flex-wrap: wrap;">
     <div style="flex: 1; min-width: 280px;">
       <div class="section-tag">Coach IA</div>
@@ -434,7 +465,7 @@
 </section>
 
 <!-- Pricing -->
-<section id="pricing">
+<section id="pricing" class="reveal">
   <div class="container">
     <div class="section-tag">Tarifs</div>
     <h2>Investis dans <span class="accent">ta mémoire</span></h2>
@@ -491,7 +522,7 @@
 </section>
 
 <!-- Testimonials -->
-<section style="background: var(--dark2);">
+<section class="reveal" style="background: var(--dark2);">
   <div class="container">
     <div class="section-tag">Témoignages</div>
     <h2>Ils ont <span class="accent">transformé</span> leur mémoire</h2>
@@ -520,7 +551,7 @@
 </section>
 
 <!-- FAQ -->
-<section id="faq">
+<section id="faq" class="reveal">
   <div class="container">
     <div class="section-tag">FAQ</div>
     <h2>Questions <span class="accent">fréquentes</span></h2>
@@ -697,6 +728,27 @@
     msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
   }
+
+  // ── Menu hamburger (mobile) ─────────────────────────────────
+  function toggleMenu() {
+    document.getElementById('hamburger').classList.toggle('open');
+    document.getElementById('nav-links').classList.toggle('open');
+  }
+  function closeMenu() {
+    document.getElementById('hamburger').classList.remove('open');
+    document.getElementById('nav-links').classList.remove('open');
+  }
+
+  // ── Scroll Reveal (animation d'apparition) ─────────────────
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 </script>
 
 </body>

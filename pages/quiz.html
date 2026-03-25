@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Mémoire — MemoryOS</title>
+  <style>
+    /* === Variables & Reset === */
+    :root {
+      --gold: #f0a500;
+      --gold-light: #ffd166;
+      --dark: #0d0d1a;
+      --dark2: #13132b;
+      --dark3: #1e1e3f;
+      --purple: #6c3fc5;
+      --purple-light: #8b5cf6;
+      --green: #22c55e;
+      --red: #ef4444;
+      --text: #e8e8f0;
+      --text-muted: #9090b0;
+      --radius: 14px;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* === En-tête === */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      background: var(--dark2);
+      border-bottom: 1px solid var(--dark3);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header__back {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .header__back:hover {
+      color: var(--gold);
+    }
+
+    .header__title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .header__progress {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* === Barre de progression globale === */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--dark3);
+    }
+
+    .progress-bar__fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--purple), var(--gold));
+      transition: width 0.4s ease;
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* === Conteneur principal === */
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+
+    /* === Dialogue de reprise === */
+    .resume-dialog {
+      background: var(--dark2);
+      border: 1px solid var(--dark3);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .resume-dialog p {
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+
+    .resume-dialog__actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.5rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.2s;
+      font-family: inherit;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn--primary {
+      background: linear-gradient(135deg, var(--purple), var(--purple-light));
+      color: #fff;
+    }
+
+    .btn--primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn--gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--dark);
+    }
+
+    .btn--gold:hover {
+      opacity: 0.9;
+    }
+
+    .btn--outline {
+      background: transparent;
+      border: 1px solid var(--dark3);
+      color: var(--text-muted);
+    }
+
+    .btn--outline:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+
+    /* === Minuteur circulaire === */
+    .timer-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .timer {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .timer svg {
+      transform: rotate(-90deg);
+      width: 80px;
+      height: 80px;
+    }
+
+    .timer__bg {
+      fill: none;
+      stroke: var(--dark3);
+      stroke-width: 6;
+    }
+
+    .timer__ring {
+      fill: none;
+      stroke: var(--green);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 207.35;
+      stroke-dashoffset: 0;
+      transition: stroke 0.3s;
+    }
+
+    .timer__text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    /* === Badge catégorie === */
+    .category-badge {
+      display: inline-block;
+      padding: 0.25rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 1rem;
+      background: var(--dark3);
+      color: var(--purple-light);
+    }
+
+    /* === Question === */
+    .question-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+
+    /* === Options === */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.9rem 1.1rem;
+      background: var(--dark2);
+      border: 2px solid var(--dark3);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.1s;
+      font-size: 1rem;
+    }
+
+    .option:hover:not(.option--disabled) {
+      border-color: var(--purple);
+      background: var(--dark3);
+    }
+
+    .option__letter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: var(--dark3);
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .option--correct {
+      border-color: var(--green);
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .option--correct .option__letter {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .option--wrong {
+      border-color: var(--red);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .option--wrong .option__letter {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .option--disabled {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* === Explication === */
+    .explanation {
+      background: var(--dark2);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1.25rem;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      display: none;
+    }
+
+    .explanation.visible {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* === Bouton suivant === */
+    .next-wrapper {
+      display: none;
+      justify-content: flex-end;
+    }
+
+    .next-wrapper.visible {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* === Écran résultats === */
+    .results {
+      display: none;
+      text-align: center;
+    }
+
+    .results.visible {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .results__emoji {
+      font-size: 3.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .results__score {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.25rem;
+    }
+
+    .results__label {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+
+    /* === Analyse par catégorie === */
+    .categories-grid {
+      display: grid;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      text-align: left;
+    }
+
+    .cat-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--dark2);
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius);
+    }
+
+    .cat-row__label {
+      min-width: 110px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .cat-row__bar {
+      flex: 1;
+      height: 8px;
+      background: var(--dark3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .cat-row__bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+
+    .cat-row__score {
+      font-size: 0.85rem;
+      font-weight: 700;
+      min-width: 32px;
+      text-align: right;
+    }
+
+    .results__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 1.5rem;
+    }
+
+    .results__link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    .results__link:hover {
+      color: var(--gold);
+    }
+
+    /* === Toast notification === */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--dark3);
+      color: var(--text);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .toast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* === Animation === */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === Responsive tablette / desktop === */
+    @media (min-width: 640px) {
+      .header {
+        padding: 1rem 2rem;
+      }
+      .container {
+        padding: 2rem 2rem 4rem;
+      }
+      .question-text {
+        font-size: 1.35rem;
+      }
+      .results__actions {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
+
+    /* === Masquage des sections === */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <!-- En-tête -->
+  <header class="header" id="header">
+    <a href="/pages/dashboard.html" class="header__back">← Dashboard</a>
+    <span class="header__title">Quiz Mémoire</span>
+    <span class="header__progress" id="headerProgress">Question 1/20</span>
+  </header>
+
+  <!-- Barre de progression -->
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-bar__fill" id="progressFill" style="width: 5%"></div>
+  </div>
+
+  <!-- Conteneur principal -->
+  <div class="container">
+    <!-- Dialogue de reprise (affiché si état sauvegardé) -->
+    <div class="resume-dialog hidden" id="resumeDialog">
+      <p>📝 Vous avez un quiz en cours. Voulez-vous reprendre ?</p>
+      <div class="resume-dialog__actions">
+        <button class="btn btn--primary" id="btnResume">Reprendre</button>
+        <button class="btn btn--outline" id="btnRestart">Recommencer</button>
+      </div>
+    </div>
+
+    <!-- Zone de question -->
+    <div id="quizArea">
+      <!-- Minuteur circulaire -->
+      <div class="timer-wrapper">
+        <div class="timer" id="timer">
+          <svg viewBox="0 0 80 80">
+            <circle class="timer__bg" cx="40" cy="40" r="33"></circle>
+            <circle class="timer__ring" id="timerRing" cx="40" cy="40" r="33"></circle>
+          </svg>
+          <span class="timer__text" id="timerText">30</span>
+        </div>
+      </div>
+
+      <!-- Badge catégorie -->
+      <span class="category-badge" id="categoryBadge">Catégorie</span>
+
+      <!-- Texte de la question -->
+      <p class="question-text" id="questionText">Question …</p>
+
+      <!-- Options de réponse -->
+      <div class="options" id="optionsContainer"></div>
+
+      <!-- Explication après réponse -->
+      <div class="explanation" id="explanation"></div>
+
+      <!-- Bouton suivant -->
+      <div class="next-wrapper" id="nextWrapper">
+        <button class="btn btn--gold" id="btnNext">Suivant →</button>
+      </div>
+    </div>
+
+    <!-- Écran de résultats -->
+    <div class="results" id="resultsScreen">
+      <div class="results__emoji" id="resultsEmoji">🏆</div>
+      <div class="results__score" id="resultsScore">0/20</div>
+      <p class="results__label">Ton score final</p>
+
+      <div class="categories-grid" id="categoriesGrid"></div>
+
+      <div class="results__actions">
+        <button class="btn btn--gold" id="btnShare">📋 Partager mon score</button>
+        <button class="btn btn--primary" id="btnRetry">Recommencer</button>
+      </div>
+      <a href="/pages/dashboard.html" class="results__link">← Retour au Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Toast de notification -->
+  <div class="toast" id="toast">Score copié !</div>
+
+  <script>
+    /* ============================================================
+       Quiz MemoryOS — Logique principale
+       ============================================================ */
+
+    // --- Lettres pour les options ---
+    const LETTERS = ['A', 'B', 'C', 'D'];
+
+    // --- Durée du minuteur (secondes) ---
+    const TIMER_DURATION = 30;
+
+    // --- Périmètre du cercle SVG (2 × π × r, r = 33) ---
+    const CIRCUMFERENCE = 2 * Math.PI * 33;
+
+    /* ----------------------------------------------------------
+       Base de données des 20 questions (5 catégories × 4)
+       ---------------------------------------------------------- */
+    const QUESTIONS = [
+      /* === Catégorie : Bases de la mémoire === */
+      {
+        id: 1,
+        category: 'base',
+        categoryLabel: 'Bases de la mémoire',
+        text: 'Combien de types de mémoire à long terme existent ?',
+        options: ['2', '3', '4', '5'],
+        correct: 1,
+        explanation: 'Il existe principalement 3 types : la mémoire déclarative (épisodique et sémantique) et la mémoire non-déclarative (procédurale). Certains modèles distinguent aussi la mémoire prospective.'
+      },
+      {
+        id: 2,
+        category: 'base',
+        categoryLabel: 'Bases de la mémoire',
+        text: "La courbe d'Ebbinghaus : pourcentage oublié en 24h ?",
+        options: ['20%', '50%', '70%', '90%'],
+        correct: 2,
+        explanation: "Selon les travaux d'Hermann Ebbinghaus, nous oublions environ 70 % des informations apprises dans les 24 premières heures sans révision active."
+      },
+      {
+        id: 3,
+        category: 'base',
+        categoryLabel: 'Bases de la mémoire',
+        text: 'Quelle structure du cerveau est essentielle à la mémoire ?',
+        options: ['Amygdale', 'Hippocampe', 'Cortex préfrontal', 'Cervelet'],
+        correct: 1,
+        explanation: "L'hippocampe joue un rôle central dans la formation de nouveaux souvenirs et la consolidation de la mémoire à long terme."
+      },
+      {
+        id: 4,
+        category: 'base',
+        categoryLabel: 'Bases de la mémoire',
+        text: "La mémoire de travail peut retenir combien d'éléments ?",
+        options: ['3±1', '5±2', '7±2', '12±3'],
+        correct: 2,
+        explanation: "Selon George Miller, la mémoire de travail retient environ 7±2 éléments simultanément — c'est le fameux « nombre magique »."
+      },
+
+      /* === Catégorie : Techniques de mémorisation === */
+      {
+        id: 5,
+        category: 'technique',
+        categoryLabel: 'Techniques de mémorisation',
+        text: 'Le palais de mémoire est aussi appelé :',
+        options: ['Méthode des loci', 'Chunking', 'Mnémonique', 'Mind mapping'],
+        correct: 0,
+        explanation: 'La méthode des loci (lieux) consiste à associer des informations à des emplacements dans un lieu familier que l\'on parcourt mentalement.'
+      },
+      {
+        id: 6,
+        category: 'technique',
+        categoryLabel: 'Techniques de mémorisation',
+        text: 'Quel algorithme est utilisé dans Anki ?',
+        options: ['PageRank', 'SM-2', 'Dijkstra', 'A*'],
+        correct: 1,
+        explanation: "SM-2 (SuperMemo 2) est l'algorithme de répétition espacée créé par Piotr Wozniak et utilisé par Anki pour planifier les révisions."
+      },
+      {
+        id: 7,
+        category: 'technique',
+        categoryLabel: 'Techniques de mémorisation',
+        text: 'Le chunking consiste à :',
+        options: ['Répéter intensivement', 'Regrouper en unités', 'Associer des images', 'Écrire à la main'],
+        correct: 1,
+        explanation: "Le chunking (groupement) consiste à organiser l'information en blocs significatifs pour faciliter la rétention en mémoire de travail."
+      },
+      {
+        id: 8,
+        category: 'technique',
+        categoryLabel: 'Techniques de mémorisation',
+        text: 'La technique Feynman consiste à :',
+        options: ['Lire 10 fois', 'Enseigner à quelqu\'un', 'Dessiner un schéma', 'Méditer'],
+        correct: 1,
+        explanation: "La technique de Richard Feynman consiste à expliquer un concept comme si on l'enseignait à un enfant, révélant ainsi les lacunes de compréhension."
+      },
+
+      /* === Catégorie : Nutrition & cerveau === */
+      {
+        id: 9,
+        category: 'nutrition',
+        categoryLabel: 'Nutrition & cerveau',
+        text: 'Quel acide gras est bénéfique pour la mémoire ?',
+        options: ['Omega-6', 'DHA (Omega-3)', 'Acide palmitique', 'Acide stéarique'],
+        correct: 1,
+        explanation: "Le DHA (acide docosahexaénoïque), un acide gras Omega-3, est un composant structurel majeur du cerveau et favorise les fonctions cognitives."
+      },
+      {
+        id: 10,
+        category: 'nutrition',
+        categoryLabel: 'Nutrition & cerveau',
+        text: 'Quel aliment est riche en antioxydants pour le cerveau ?',
+        options: ['Pain blanc', 'Myrtilles', 'Pâtes', 'Riz'],
+        correct: 1,
+        explanation: "Les myrtilles (blueberries) sont riches en flavonoïdes et anthocyanines, des antioxydants qui protègent le cerveau du stress oxydatif."
+      },
+      {
+        id: 11,
+        category: 'nutrition',
+        categoryLabel: 'Nutrition & cerveau',
+        text: "L'hydratation affecte la mémoire car le cerveau est composé à :",
+        options: ["50% d'eau", "60% d'eau", "75% d'eau", "90% d'eau"],
+        correct: 2,
+        explanation: "Le cerveau est composé d'environ 75 % d'eau. Même une déshydratation légère (1-2 %) peut altérer la concentration et la mémoire de travail."
+      },
+      {
+        id: 12,
+        category: 'nutrition',
+        categoryLabel: 'Nutrition & cerveau',
+        text: 'Quel micronutriment est crucial pour la mémoire ?',
+        options: ['Fer', 'Vitamine B12', 'Calcium', 'Potassium'],
+        correct: 1,
+        explanation: "La vitamine B12 est essentielle à la formation de la gaine de myéline et à la synthèse des neurotransmetteurs impliqués dans la mémoire."
+      },
+
+      /* === Catégorie : Sommeil & mémoire === */
+      {
+        id: 13,
+        category: 'sommeil',
+        categoryLabel: 'Sommeil & mémoire',
+        text: 'La consolidation mémorielle est active pendant :',
+        options: ['Phase N1', 'Phase N2', 'Phase N3', 'Phase REM'],
+        correct: 3,
+        explanation: "La phase REM (Rapid Eye Movement) est cruciale pour la consolidation de la mémoire, notamment la mémoire procédurale et émotionnelle."
+      },
+      {
+        id: 14,
+        category: 'sommeil',
+        categoryLabel: 'Sommeil & mémoire',
+        text: "Combien d'heures de sommeil recommandées pour la mémoire ?",
+        options: ['5-6h', '6-7h', '7-9h', '10-12h'],
+        correct: 2,
+        explanation: "Les experts recommandent 7 à 9 heures de sommeil pour un adulte afin d'optimiser la consolidation mémorielle et les performances cognitives."
+      },
+      {
+        id: 15,
+        category: 'sommeil',
+        categoryLabel: 'Sommeil & mémoire',
+        text: 'La sieste idéale pour la mémoire dure :',
+        options: ['5 min', '10-20 min', '45 min', '2h'],
+        correct: 1,
+        explanation: "Une sieste de 10 à 20 minutes (power nap) améliore l'attention et la mémoire sans provoquer d'inertie du sommeil."
+      },
+      {
+        id: 16,
+        category: 'sommeil',
+        categoryLabel: 'Sommeil & mémoire',
+        text: 'Le manque de sommeil affecte surtout :',
+        options: ['La vision', "L'hippocampe", 'Les muscles', 'La digestion'],
+        correct: 1,
+        explanation: "Le manque de sommeil réduit l'activité de l'hippocampe, limitant la capacité à former et consolider de nouveaux souvenirs."
+      },
+
+      /* === Catégorie : Application pratique === */
+      {
+        id: 17,
+        category: 'pratique',
+        categoryLabel: 'Application pratique',
+        text: "L'intervalle optimal de révision : J+1, J+7, J+30, J+…",
+        options: ['60', '90', '120', '180'],
+        correct: 1,
+        explanation: "Le calendrier classique de répétition espacée est J+1, J+7, J+30, J+90 — chaque intervalle renforce la trace mnésique."
+      },
+      {
+        id: 18,
+        category: 'pratique',
+        categoryLabel: 'Application pratique',
+        text: "Combien de minutes d'entraînement quotidien suffisent ?",
+        options: ['5 min', '15 min', '30 min', '60 min'],
+        correct: 1,
+        explanation: "15 minutes d'entraînement quotidien, pratiquées régulièrement, suffisent pour observer des améliorations significatives de la mémoire."
+      },
+      {
+        id: 19,
+        category: 'pratique',
+        categoryLabel: 'Application pratique',
+        text: 'Le meilleur moment pour apprendre est :',
+        options: ['Matin tôt', 'Midi', 'Soir avant coucher', 'Nuit'],
+        correct: 0,
+        explanation: "Le matin, le cortisol naturellement élevé favorise l'attention et la consolidation. C'est le moment optimal pour l'apprentissage de nouvelles informations."
+      },
+      {
+        id: 20,
+        category: 'pratique',
+        categoryLabel: 'Application pratique',
+        text: "L'association visuelle est efficace car elle active :",
+        options: ['1 zone du cerveau', '2 zones', 'Plusieurs zones', 'Aucune zone spécifique'],
+        correct: 2,
+        explanation: "L'association visuelle active plusieurs zones cérébrales simultanément (visuelle, spatiale, émotionnelle), créant des connexions multiples qui renforcent la mémorisation."
+      }
+    ];
+
+    /* ----------------------------------------------------------
+       Correspondance catégorie → couleur pour les barres
+       ---------------------------------------------------------- */
+    const CATEGORY_COLORS = {
+      base: 'var(--purple-light)',
+      technique: 'var(--gold)',
+      nutrition: 'var(--green)',
+      sommeil: '#60a5fa',
+      pratique: '#f472b6'
+    };
+
+    /* ----------------------------------------------------------
+       Ordre des catégories pour l'affichage des résultats
+       ---------------------------------------------------------- */
+    const CATEGORY_ORDER = [
+      { key: 'base',      label: 'Bases' },
+      { key: 'technique', label: 'Technique' },
+      { key: 'nutrition', label: 'Nutrition' },
+      { key: 'sommeil',   label: 'Sommeil' },
+      { key: 'pratique',  label: 'Pratique' }
+    ];
+
+    /* ----------------------------------------------------------
+       Références DOM
+       ---------------------------------------------------------- */
+    const $headerProgress = document.getElementById('headerProgress');
+    const $progressFill   = document.getElementById('progressFill');
+    const $resumeDialog   = document.getElementById('resumeDialog');
+    const $btnResume      = document.getElementById('btnResume');
+    const $btnRestart     = document.getElementById('btnRestart');
+    const $quizArea       = document.getElementById('quizArea');
+    const $timerRing      = document.getElementById('timerRing');
+    const $timerText      = document.getElementById('timerText');
+    const $categoryBadge  = document.getElementById('categoryBadge');
+    const $questionText   = document.getElementById('questionText');
+    const $options        = document.getElementById('optionsContainer');
+    const $explanation    = document.getElementById('explanation');
+    const $nextWrapper    = document.getElementById('nextWrapper');
+    const $btnNext        = document.getElementById('btnNext');
+    const $resultsScreen  = document.getElementById('resultsScreen');
+    const $resultsEmoji   = document.getElementById('resultsEmoji');
+    const $resultsScore   = document.getElementById('resultsScore');
+    const $catGrid        = document.getElementById('categoriesGrid');
+    const $btnShare       = document.getElementById('btnShare');
+    const $btnRetry       = document.getElementById('btnRetry');
+    const $toast          = document.getElementById('toast');
+    const $header         = document.getElementById('header');
+    const $progressBar    = document.getElementById('progressBar');
+
+    /* ----------------------------------------------------------
+       État du quiz
+       ---------------------------------------------------------- */
+    let currentIndex = 0;   // indice de la question courante (0-19)
+    let answers = [];        // tableau des réponses : { questionId, selected, correct, isCorrect }
+    let timerInterval = null;
+    let timeLeft = TIMER_DURATION;
+    let answered = false;
+
+    /* ----------------------------------------------------------
+       Persistance localStorage
+       ---------------------------------------------------------- */
+    const STORAGE_STATE   = 'memoryos_quiz_state';
+    const STORAGE_RESULTS = 'memoryos_quiz_results';
+    const STORAGE_ACTIVITY = 'memoryos_last_activity';
+
+    /** Sauvegarde l'état courant du quiz */
+    function saveState() {
+      const state = { currentIndex, answers };
+      localStorage.setItem(STORAGE_STATE, JSON.stringify(state));
+    }
+
+    /** Charge l'état sauvegardé (ou null) */
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_STATE);
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    /** Supprime l'état sauvegardé */
+    function clearState() {
+      localStorage.removeItem(STORAGE_STATE);
+    }
+
+    /** Sauvegarde les résultats dans l'historique */
+    function saveResults(score, catScores) {
+      let history = [];
+      try {
+        const raw = localStorage.getItem(STORAGE_RESULTS);
+        if (raw) history = JSON.parse(raw);
+      } catch { /* ignore */ }
+      history.push({
+        score,
+        date: new Date().toISOString(),
+        categories: catScores
+      });
+      localStorage.setItem(STORAGE_RESULTS, JSON.stringify(history));
+    }
+
+    /** Met à jour la dernière activité */
+    function updateActivity() {
+      localStorage.setItem(STORAGE_ACTIVITY, JSON.stringify({
+        page: '/pages/quiz.html',
+        label: 'Quiz',
+        timestamp: Date.now()
+      }));
+    }
+
+    /* ----------------------------------------------------------
+       Minuteur circulaire
+       ---------------------------------------------------------- */
+
+    /** Démarre le minuteur pour la question courante */
+    function startTimer() {
+      timeLeft = TIMER_DURATION;
+      updateTimerDisplay();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(function () {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          // Temps écoulé → mauvaise réponse automatique
+          handleTimeout();
+        }
+      }, 1000);
+    }
+
+    /** Met à jour l'affichage visuel du minuteur */
+    function updateTimerDisplay() {
+      // Texte au centre
+      $timerText.textContent = timeLeft;
+
+      // Calcul de l'offset SVG (cercle se vide dans le sens horaire)
+      var fraction = timeLeft / TIMER_DURATION;
+      $timerRing.style.strokeDasharray = CIRCUMFERENCE;
+      $timerRing.style.strokeDashoffset = CIRCUMFERENCE * (1 - fraction);
+
+      // Couleur selon le temps restant
+      if (timeLeft > 10) {
+        $timerRing.style.stroke = 'var(--green)';
+        $timerText.style.color = 'var(--green)';
+      } else if (timeLeft > 5) {
+        $timerRing.style.stroke = 'var(--gold)';
+        $timerText.style.color = 'var(--gold)';
+      } else {
+        $timerRing.style.stroke = 'var(--red)';
+        $timerText.style.color = 'var(--red)';
+      }
+    }
+
+    /** Arrête le minuteur */
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    /* ----------------------------------------------------------
+       Gestion du temps écoulé
+       ---------------------------------------------------------- */
+    function handleTimeout() {
+      if (answered) return;
+      answered = true;
+
+      // Enregistrer comme mauvaise réponse (aucune sélection)
+      var q = QUESTIONS[currentIndex];
+      answers.push({
+        questionId: q.id,
+        selected: -1,
+        correct: q.correct,
+        isCorrect: false
+      });
+
+      // Afficher la bonne réponse
+      revealAnswer(-1, q.correct);
+      showExplanation(q.explanation);
+      showNextButton();
+      saveState();
+    }
+
+    /* ----------------------------------------------------------
+       Affichage d'une question
+       ---------------------------------------------------------- */
+    function renderQuestion(index) {
+      answered = false;
+      var q = QUESTIONS[index];
+
+      // Mise à jour de l'en-tête
+      $headerProgress.textContent = 'Question ' + (index + 1) + '/20';
+      $progressFill.style.width = ((index + 1) / 20 * 100) + '%';
+
+      // Badge catégorie
+      $categoryBadge.textContent = q.categoryLabel;
+
+      // Texte de la question
+      $questionText.textContent = q.text;
+
+      // Options
+      $options.innerHTML = '';
+      q.options.forEach(function (opt, i) {
+        var btn = document.createElement('button');
+        btn.className = 'option';
+        btn.setAttribute('data-index', i);
+        btn.innerHTML =
+          '<span class="option__letter">' + LETTERS[i] + '</span>' +
+          '<span>' + opt + '</span>';
+        btn.addEventListener('click', function () {
+          onSelectOption(i);
+        });
+        $options.appendChild(btn);
+      });
+
+      // Masquer explication et bouton suivant
+      $explanation.classList.remove('visible');
+      $nextWrapper.classList.remove('visible');
+
+      // Démarrer le minuteur
+      startTimer();
+    }
+
+    /* ----------------------------------------------------------
+       Sélection d'une option
+       ---------------------------------------------------------- */
+    function onSelectOption(selected) {
+      if (answered) return;
+      answered = true;
+      stopTimer();
+
+      var q = QUESTIONS[currentIndex];
+      var isCorrect = selected === q.correct;
+
+      // Enregistrer la réponse
+      answers.push({
+        questionId: q.id,
+        selected: selected,
+        correct: q.correct,
+        isCorrect: isCorrect
+      });
+
+      // Révéler visuellement
+      revealAnswer(selected, q.correct);
+      showExplanation(q.explanation);
+      showNextButton();
+      saveState();
+    }
+
+    /** Colore les options après réponse */
+    function revealAnswer(selected, correct) {
+      var btns = $options.querySelectorAll('.option');
+      btns.forEach(function (btn, i) {
+        btn.classList.add('option--disabled');
+        if (i === correct) {
+          btn.classList.add('option--correct');
+        } else if (i === selected && selected !== correct) {
+          btn.classList.add('option--wrong');
+        }
+      });
+    }
+
+    /** Affiche l'explication */
+    function showExplanation(text) {
+      $explanation.textContent = '💡 ' + text;
+      $explanation.classList.add('visible');
+    }
+
+    /** Affiche le bouton "Suivant" */
+    function showNextButton() {
+      // Dernier texte du bouton
+      if (currentIndex >= QUESTIONS.length - 1) {
+        $btnNext.textContent = 'Voir les résultats →';
+      } else {
+        $btnNext.textContent = 'Suivant →';
+      }
+      $nextWrapper.classList.add('visible');
+    }
+
+    /* ----------------------------------------------------------
+       Passage à la question suivante
+       ---------------------------------------------------------- */
+    $btnNext.addEventListener('click', function () {
+      currentIndex++;
+      if (currentIndex >= QUESTIONS.length) {
+        // Fin du quiz → afficher les résultats
+        showResults();
+      } else {
+        renderQuestion(currentIndex);
+      }
+    });
+
+    /* ----------------------------------------------------------
+       Écran de résultats
+       ---------------------------------------------------------- */
+    function showResults() {
+      stopTimer();
+      clearState();
+
+      // Masquer la zone de quiz, afficher les résultats
+      $quizArea.classList.add('hidden');
+      $header.querySelector('.header__progress').textContent = 'Résultats';
+      $progressFill.style.width = '100%';
+
+      // Calcul du score total
+      var totalCorrect = answers.filter(function (a) { return a.isCorrect; }).length;
+
+      // Emoji selon le score
+      var emoji = '📚';
+      if (totalCorrect >= 16) emoji = '🏆';
+      else if (totalCorrect >= 12) emoji = '🎯';
+      else if (totalCorrect >= 8) emoji = '💪';
+
+      $resultsEmoji.textContent = emoji;
+      $resultsScore.textContent = totalCorrect + '/20';
+
+      // Scores par catégorie
+      var catScores = {};
+      CATEGORY_ORDER.forEach(function (c) { catScores[c.key] = 0; });
+      answers.forEach(function (a) {
+        var q = QUESTIONS.find(function (qq) { return qq.id === a.questionId; });
+        if (q && a.isCorrect) {
+          catScores[q.category]++;
+        }
+      });
+
+      // Grille des catégories
+      $catGrid.innerHTML = '';
+      CATEGORY_ORDER.forEach(function (c) {
+        var score = catScores[c.key] || 0;
+        var pct = (score / 4) * 100;
+        var color = CATEGORY_COLORS[c.key];
+        var row = document.createElement('div');
+        row.className = 'cat-row';
+        row.innerHTML =
+          '<span class="cat-row__label">' + c.label + '</span>' +
+          '<div class="cat-row__bar">' +
+            '<div class="cat-row__bar-fill" style="width:' + pct + '%;background:' + color + '"></div>' +
+          '</div>' +
+          '<span class="cat-row__score">' + score + '/4</span>';
+        $catGrid.appendChild(row);
+      });
+
+      // Sauvegarder les résultats
+      saveResults(totalCorrect, catScores);
+      updateActivity();
+
+      // Afficher l'écran
+      $resultsScreen.classList.add('visible');
+    }
+
+    /* ----------------------------------------------------------
+       Partager le score
+       ---------------------------------------------------------- */
+    $btnShare.addEventListener('click', function () {
+      var totalCorrect = answers.filter(function (a) { return a.isCorrect; }).length;
+
+      // Recalcul des scores par catégorie
+      var catScores = {};
+      CATEGORY_ORDER.forEach(function (c) { catScores[c.key] = 0; });
+      answers.forEach(function (a) {
+        var q = QUESTIONS.find(function (qq) { return qq.id === a.questionId; });
+        if (q && a.isCorrect) catScores[q.category]++;
+      });
+
+      var text =
+        '🧠 MemoryOS Quiz — J\'ai obtenu ' + totalCorrect + '/20 ! ' +
+        'Bases: ' + (catScores.base || 0) + '/4 | ' +
+        'Technique: ' + (catScores.technique || 0) + '/4 | ' +
+        'Nutrition: ' + (catScores.nutrition || 0) + '/4 | ' +
+        'Sommeil: ' + (catScores.sommeil || 0) + '/4 | ' +
+        'Pratique: ' + (catScores.pratique || 0) + '/4 ' +
+        '— Teste ta mémoire sur memoryos.fr';
+
+      // Copier dans le presse-papiers
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          showToast('Score copié dans le presse-papiers !');
+        }).catch(function () {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    });
+
+    /** Copie de secours pour les navigateurs sans API Clipboard */
+    function fallbackCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('Score copié dans le presse-papiers !');
+      } catch {
+        showToast('Impossible de copier le texte.');
+      }
+      document.body.removeChild(ta);
+    }
+
+    /** Affiche un toast éphémère */
+    function showToast(msg) {
+      $toast.textContent = msg;
+      $toast.classList.add('visible');
+      setTimeout(function () {
+        $toast.classList.remove('visible');
+      }, 2500);
+    }
+
+    /* ----------------------------------------------------------
+       Recommencer le quiz
+       ---------------------------------------------------------- */
+    function resetQuiz() {
+      currentIndex = 0;
+      answers = [];
+      answered = false;
+      clearState();
+
+      // Réinitialiser l'UI
+      $quizArea.classList.remove('hidden');
+      $resultsScreen.classList.remove('visible');
+      $resumeDialog.classList.add('hidden');
+
+      renderQuestion(0);
+      updateActivity();
+    }
+
+    $btnRetry.addEventListener('click', resetQuiz);
+
+    /* ----------------------------------------------------------
+       Dialogue de reprise
+       ---------------------------------------------------------- */
+    $btnResume.addEventListener('click', function () {
+      $resumeDialog.classList.add('hidden');
+      renderQuestion(currentIndex);
+    });
+
+    $btnRestart.addEventListener('click', function () {
+      resetQuiz();
+    });
+
+    /* ----------------------------------------------------------
+       Initialisation au chargement
+       ---------------------------------------------------------- */
+    (function init() {
+      // Mettre à jour la dernière activité
+      updateActivity();
+
+      // Initialiser le périmètre SVG
+      $timerRing.style.strokeDasharray = CIRCUMFERENCE;
+      $timerRing.style.strokeDashoffset = 0;
+
+      // Vérifier s'il y a un état sauvegardé
+      var savedState = loadState();
+      if (savedState && savedState.answers && savedState.answers.length > 0 && savedState.currentIndex < QUESTIONS.length) {
+        // Proposer de reprendre
+        currentIndex = savedState.currentIndex;
+        answers = savedState.answers || [];
+        $resumeDialog.classList.remove('hidden');
+        // Masquer la zone de quiz en attendant le choix
+        $quizArea.classList.add('hidden');
+      } else {
+        // Pas d'état sauvegardé → démarrer normalement
+        renderQuestion(0);
+      }
+    })();
+  </script>
+</body>
+</html>
