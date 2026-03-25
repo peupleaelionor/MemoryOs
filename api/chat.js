@@ -19,18 +19,18 @@ function isRateLimited(ip) {
   if (entry.count > RATE_LIMIT_MAX) {
     return true;
   }
-  return false;
-}
 
-// Nettoyage périodique de la map pour éviter les fuites mémoire
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of rateLimitMap) {
-    if (now - entry.windowStart > RATE_LIMIT_WINDOW) {
-      rateLimitMap.delete(ip);
+  // Nettoyage opportuniste des entrées expirées
+  if (rateLimitMap.size > 1000) {
+    for (const [key, val] of rateLimitMap) {
+      if (now - val.windowStart > RATE_LIMIT_WINDOW) {
+        rateLimitMap.delete(key);
+      }
     }
   }
-}, 10 * 60 * 1000); // Toutes les 10 minutes
+
+  return false;
+}
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {

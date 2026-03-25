@@ -439,7 +439,7 @@
         if (!raw) return '—';
         const results = JSON.parse(raw);
         if (!Array.isArray(results) || results.length === 0) return '—';
-        const sum = results.reduce(function (a, b) { return a + Number(b); }, 0);
+        const sum = results.reduce(function (a, r) { return a + (typeof r === 'object' ? (r.score || 0) : Number(r)); }, 0);
         return Math.round(sum / results.length) + '%';
       } catch (_) {
         return '—';
@@ -477,10 +477,10 @@
         try { parsed = JSON.parse(last); } catch (_) { parsed = null; }
       }
 
-      if (parsed && parsed.title && parsed.url) {
+      if (parsed && parsed.label && parsed.page) {
         container.innerHTML =
-          '<p>Dernière activité : <strong>' + escapeHtml(parsed.title) + '</strong></p>' +
-          '<a href="' + escapeAttr(parsed.url) + '" class="btn-primary">Continuer</a>';
+          '<p>Dernière activité : <strong>' + escapeHtml(parsed.label) + '</strong></p>' +
+          '<a href="' + escapeAttr(parsed.page) + '" class="btn-primary">Continuer</a>';
       } else {
         container.innerHTML =
           '<p>Commence ton premier quiz !</p>' +

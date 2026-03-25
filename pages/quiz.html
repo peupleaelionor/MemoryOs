@@ -1206,7 +1206,7 @@
 
       // Vérifier s'il y a un état sauvegardé
       var savedState = loadState();
-      if (savedState && savedState.currentIndex > 0 && savedState.currentIndex < QUESTIONS.length) {
+      if (savedState && savedState.answers && savedState.answers.length > 0 && savedState.currentIndex < QUESTIONS.length) {
         // Proposer de reprendre
         currentIndex = savedState.currentIndex;
         answers = savedState.answers || [];

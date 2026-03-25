@@ -698,10 +698,13 @@
     saveHistory();
     scrollToBottom();
 
-    /* Préparer les 10 derniers messages pour l'API */
-    var recentHistory = history.slice(-10).map(function (m) {
-      return { role: m.role === 'user' ? 'user' : 'assistant', content: m.text };
-    });
+    /* Préparer les 10 derniers messages pour l'API (exclure les erreurs) */
+    var recentHistory = history
+      .filter(function (m) { return m.role !== 'error'; })
+      .slice(-10)
+      .map(function (m) {
+        return { role: m.role === 'user' ? 'user' : 'assistant', content: m.text };
+      });
 
     showTyping(true);
 
