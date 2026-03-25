@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MemoryOS — Entraîne ton cerveau. Domine ta vie.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --white: #F5F0E8;
+    --gold: #C8A84B;
+    --gold-light: #E8C96A;
+    --red: #D64045;
+    --gray: #1A1A1A;
+    --gray2: #2A2A2A;
+    --muted: #666;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 4rem;
+    border-bottom: 1px solid rgba(200,168,75,0.15);
+    background: rgba(8,8,8,0.85);
+    backdrop-filter: blur(20px);
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+  }
+
+  .logo span { color: var(--white); }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2.5rem;
+  }
+
+  nav ul a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+
+  nav ul a:hover { opacity: 1; color: var(--gold); }
+
+  .nav-cta {
+    background: var(--gold);
+    color: var(--black) !important;
+    padding: 0.5rem 1.4rem;
+    border-radius: 2px;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+    font-size: 0.8rem !important;
+    letter-spacing: 0.1em;
+  }
+
+  .nav-cta:hover { background: var(--gold-light) !important; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 8rem 4rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 60% at 70% 50%, rgba(200,168,75,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 80% at 10% 80%, rgba(214,64,69,0.04) 0%, transparent 60%);
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,168,75,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,168,75,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+  }
+
+  .hero-content {
+    position: relative;
+    max-width: 800px;
+  }
+
+  .hero-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .hero-label::before {
+    content: '';
+    width: 2rem;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 10vw, 9rem);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 .line2 { color: var(--gold); }
+  h1 .line3 { 
+    -webkit-text-stroke: 1px var(--white);
+    color: transparent;
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    font-weight: 300;
+    color: rgba(245,240,232,0.65);
+    max-width: 480px;
+    margin-bottom: 3rem;
+    line-height: 1.8;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    padding: 1rem 2.5rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .btn-primary:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(200,168,75,0.3);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid rgba(245,240,232,0.2);
+    padding: 1rem 2.5rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .hero-stats {
+    position: absolute;
+    right: 4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .stat {
+    text-align: right;
+    border-right: 2px solid var(--gold);
+    padding-right: 1.5rem;
+  }
+
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ─── TICKER ─── */
+  .ticker {
+    background: var(--gold);
+    padding: 0.8rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .ticker-inner {
+    display: inline-flex;
+    gap: 4rem;
+    animation: ticker 20s linear infinite;
+  }
+
+  .ticker-item {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .ticker-item::after {
+    content: '◆';
+    font-size: 0.6rem;
+  }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ─── SECTIONS ─── */
+  section { padding: 8rem 4rem; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 6vw, 5rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ─── FEATURES ─── */
+  .features {
+    background: var(--gray);
+    border-top: 1px solid var(--gray2);
+    border-bottom: 1px solid var(--gray2);
+  }
+
+  .features-header {
+    max-width: 600px;
+    margin-bottom: 5rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--gray2);
+  }
+
+  .feature-card {
+    background: var(--gray);
+    padding: 3rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+
+  .feature-card:hover { background: #202020; }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+  }
+
+  .feature-card:hover::before { transform: scaleX(1); }
+
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+
+  .feature-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 1rem;
+  }
+
+  .feature-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.1;
+  }
+
+  .feature-desc {
+    font-size: 0.9rem;
+    color: rgba(245,240,232,0.55);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* ─── AI CHAT DEMO ─── */
+  .chat-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+
+  .chat-info .section-label { margin-bottom: 1rem; }
+
+  .chat-info p {
+    color: rgba(245,240,232,0.6);
+    font-weight: 300;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+
+  .chat-window {
+    background: var(--gray);
+    border: 1px solid var(--gray2);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .chat-header {
+    background: var(--gray2);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .chat-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .chat-dot.red { background: #FF5F57; }
+  .chat-dot.yellow { background: #FEBC2E; }
+  .chat-dot.green { background: #28C840; }
+
+  .chat-title {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .chat-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 320px;
+  }
+
+  .msg {
+    display: flex;
+    gap: 0.8rem;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .msg.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .msg.ai .msg-avatar { background: var(--gold); color: var(--black); }
+  .msg.user .msg-avatar { background: var(--gray2); color: var(--white); }
+
+  .msg-bubble {
+    max-width: 80%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .msg.ai .msg-bubble {
+    background: rgba(200,168,75,0.08);
+    border: 1px solid rgba(200,168,75,0.15);
+    color: var(--white);
+  }
+
+  .msg.user .msg-bubble {
+    background: var(--gray2);
+    color: rgba(245,240,232,0.8);
+  }
+
+  .chat-input-row {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--gray2);
+    display: flex;
+    gap: 0.8rem;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: var(--gray2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 0.7rem 1rem;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .chat-input:focus { border-color: var(--gold); }
+  .chat-input::placeholder { color: var(--muted); }
+
+  .chat-send {
+    background: var(--gold);
+    border: none;
+    color: var(--black);
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chat-send:hover { background: var(--gold-light); }
+
+  /* ─── CHAPTERS / CURRICULUM ─── */
+  .curriculum { background: var(--black); }
+
+  .chapters-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--gray2);
+    margin-top: 4rem;
+  }
+
+  .chapter-item {
+    background: var(--black);
+    padding: 2rem 2.5rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    transition: background 0.2s;
+    cursor: default;
+  }
+
+  .chapter-item:hover { background: #0D0D0D; }
+
+  .chapter-num {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    color: rgba(200,168,75,0.2);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 3rem;
+  }
+
+  .chapter-info h3 {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .chapter-info p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .chapter-tag {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--gold);
+    background: rgba(200,168,75,0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+  }
+
+  /* ─── QUIZ SECTION ─── */
+  .quiz-section {
+    background: var(--gray);
+    border-top: 1px solid var(--gray2);
+    border-bottom: 1px solid var(--gray2);
+  }
+
+  .quiz-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: start;
+  }
+
+  .quiz-card {
+    background: var(--black);
+    border: 1px solid var(--gray2);
+    border-radius: 8px;
+    padding: 2.5rem;
+  }
+
+  .quiz-question {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .quiz-opt {
+    background: var(--gray);
+    border: 1px solid var(--gray2);
+    color: var(--white);
+    padding: 0.9rem 1.2rem;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .quiz-opt:hover { border-color: var(--gold); color: var(--gold); }
+  .quiz-opt.correct { border-color: #4CAF50; background: rgba(76,175,80,0.1); color: #4CAF50; }
+  .quiz-opt.wrong { border-color: var(--red); background: rgba(214,64,69,0.1); color: var(--red); }
+
+  .quiz-opt-letter {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--gold);
+    width: 20px;
+  }
+
+  .quiz-feedback {
+    font-size: 0.85rem;
+    padding: 0.8rem 1rem;
+    border-radius: 4px;
+    display: none;
+  }
+
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct-fb { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); color: #4CAF50; }
+  .quiz-feedback.wrong-fb { background: rgba(214,64,69,0.1); border: 1px solid rgba(214,64,69,0.3); color: var(--red); }
+
+  .quiz-next {
+    margin-top: 1rem;
+    width: 100%;
+    display: none;
+  }
+
+  .quiz-next.show { display: block; }
+
+  /* ─── PRICING ─── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 5rem;
+  }
+
+  .pricing-card {
+    background: var(--gray);
+    border: 1px solid var(--gray2);
+    border-radius: 4px;
+    padding: 2.5rem;
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .pricing-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .pricing-card.featured {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, #1A1800 0%, var(--gray) 100%);
+  }
+
+  .pricing-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold);
+    color: var(--black);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 2px;
+    font-weight: 700;
+  }
+
+  .pricing-plan {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    color: var(--gold);
+  }
+
+  .pricing-price {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .pricing-price sup {
+    font-size: 1.5rem;
+    vertical-align: top;
+    margin-top: 0.8rem;
+    display: inline-block;
+    font-family: var(--font-body);
+  }
+
+  .pricing-period {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+
+  .pricing-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .pricing-features li {
+    font-size: 0.88rem;
+    color: rgba(245,240,232,0.7);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 300;
+  }
+
+  .pricing-features li::before {
+    content: '✓';
+    color: var(--gold);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .pricing-features li.off {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  .pricing-features li.off::before { content: '✗'; color: var(--muted); }
+
+  /* ─── TESTIMONIALS ─── */
+  .testimonials { background: var(--black); }
+
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 4rem;
+  }
+
+  .testimonial {
+    background: var(--gray);
+    border: 1px solid var(--gray2);
+    padding: 2rem;
+    border-radius: 4px;
+    position: relative;
+  }
+
+  .testimonial::before {
+    content: '"';
+    font-family: Georgia, serif;
+    font-size: 5rem;
+    color: var(--gold);
+    opacity: 0.15;
+    position: absolute;
+    top: -0.5rem;
+    left: 1.2rem;
+    line-height: 1;
+  }
+
+  .testimonial-text {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: rgba(245,240,232,0.75);
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+  }
+
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .author-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--black);
+    font-size: 0.9rem;
+  }
+
+  .author-name { font-size: 0.9rem; font-weight: 600; }
+  .author-role { font-size: 0.75rem; color: var(--muted); font-weight: 300; }
+
+  .stars { color: var(--gold); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 1rem; }
+
+  /* ─── CTA FINAL ─── */
+  .final-cta {
+    background: var(--gold);
+    padding: 8rem 4rem;
+    text-align: center;
+  }
+
+  .final-cta h2 {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 8vw, 7rem);
+    color: var(--black);
+    line-height: 0.95;
+    margin-bottom: 1.5rem;
+  }
+
+  .final-cta p {
+    color: rgba(8,8,8,0.65);
+    font-size: 1.1rem;
+    font-weight: 300;
+    max-width: 480px;
+    margin: 0 auto 3rem;
+    line-height: 1.7;
+  }
+
+  .btn-dark {
+    background: var(--black);
+    color: var(--gold);
+    border: none;
+    padding: 1.1rem 3rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .btn-dark:hover {
+    background: #111;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--black);
+    border-top: 1px solid var(--gray2);
+    padding: 4rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 4rem;
+  }
+
+  .footer-brand .logo { font-size: 2rem; margin-bottom: 1rem; display: block; }
+
+  .footer-brand p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.7;
+    max-width: 280px;
+  }
+
+  footer h4 {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.2rem;
+  }
+
+  footer ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+
+  footer ul a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 300;
+    transition: color 0.2s;
+  }
+
+  footer ul a:hover { color: var(--white); }
+
+  .footer-bottom {
+    padding: 1.5rem 4rem;
+    border-top: 1px solid var(--gray2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-bottom p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1024px) {
+    nav { padding: 1rem 2rem; }
+    nav ul { display: none; }
+    .hero { padding: 7rem 2rem 4rem; }
+    .hero-stats { display: none; }
+    section { padding: 5rem 2rem; }
+    .features-grid { grid-template-columns: 1fr; }
+    .chat-section { grid-template-columns: 1fr; gap: 3rem; }
+    .chapters-grid { grid-template-columns: 1fr; }
+    .quiz-wrapper { grid-template-columns: 1fr; gap: 3rem; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    footer { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+    .final-cta { padding: 5rem 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Memory<span>OS</span></div>
+  <ul>
+    <li><a href="#features">Méthodes</a></li>
+    <li><a href="#curriculum">Programme</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#pricing">Tarifs</a></li>
+    <li><a href="#chat" class="nav-cta">Essayer l'IA →</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content fade-up visible">
+    <div class="hero-label">Système de coaching mémoire IA</div>
+    <h1>
+      <span class="line1">ENTRAÎNE</span><br>
+      <span class="line2">TON</span><br>
+      <span class="line3">CERVEAU</span>
+    </h1>
+    <p class="hero-sub">La plateforme IA qui transforme les méthodes des neurosciences en un entraînement quotidien personnalisé. Mémorise 3x plus vite.</p>
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-primary">Commencer gratuitement →</a>
+      <a href="#chat" class="btn-ghost">Voir l'IA en action</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">16</div>
+      <div class="stat-label">Chapitres</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3×</div>
+      <div class="stat-label">Mémorisation</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">Coaching IA</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">Méthode des lieux</span>
+    <span class="ticker-item">Mnémoniques</span>
+    <span class="ticker-item">Pleine conscience</span>
+    <span class="ticker-item">Codage numérique</span>
+    <span class="ticker-item">Répétition espacée</span>
+    <span class="ticker-item">Chunking</span>
+    <span class="ticker-item">Association d'images</span>
+    <span class="ticker-item">Méthode des crochets</span>
+    <!-- duplicate for loop -->
+    <span class="ticker-item">Méthode des lieux</span>
+    <span class="ticker-item">Mnémoniques</span>
+    <span class="ticker-item">Pleine conscience</span>
+    <span class="ticker-item">Codage numérique</span>
+    <span class="ticker-item">Répétition espacée</span>
+    <span class="ticker-item">Chunking</span>
+    <span class="ticker-item">Association d'images</span>
+    <span class="ticker-item">Méthode des crochets</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header fade-up">
+    <div class="section-label">// 01 — Méthodes</div>
+    <h2>TOUT CE QUI<br>FONCTIONNE<br>VRAIMENT</h2>
+    <p style="color:rgba(245,240,232,0.5); font-weight:300; line-height:1.8;">Basé sur le livre <em>Améliorer sa mémoire pour les Nuls</em> et les dernières découvertes en neurosciences.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card fade-up">
+      <span class="feature-icon">🧠</span>
+      <div class="feature-num">001</div>
+      <div class="feature-title">COACH IA PERSONNEL</div>
+      <p class="feature-desc">Un assistant IA disponible 24h/24 qui répond à toutes tes questions sur la mémoire, t'explique les techniques et suit ta progression.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">⚡</span>
+      <div class="feature-num">002</div>
+      <div class="feature-title">QUIZ ADAPTATIFS</div>
+      <p class="feature-desc">Des quiz intelligents qui s'adaptent à ton niveau et utilisent la répétition espacée pour ancrer les connaissances en mémoire à long terme.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">🎯</span>
+      <div class="feature-num">003</div>
+      <div class="feature-title">TECHNIQUES PRATIQUES</div>
+      <p class="feature-desc">Méthode des lieux, mnémoniques, chunking, associations... Chaque technique est expliquée avec des exercices interactifs concrets.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">😴</span>
+      <div class="feature-num">004</div>
+      <div class="feature-title">SOMMEIL & MÉMOIRE</div>
+      <p class="feature-desc">Protocoles pour optimiser ton sommeil et maximiser la consolidation mémorielle nocturne. Le cerveau travaille même quand tu dors.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">🍎</span>
+      <div class="feature-num">005</div>
+      <div class="feature-title">NUTRITION CÉRÉBRALE</div>
+      <p class="feature-desc">Guide complet des aliments, vitamines et substances qui boostent ou détruisent ta mémoire. Ce que tu manges affecte ton cerveau.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">📈</span>
+      <div class="feature-num">006</div>
+      <div class="feature-title">SUIVI DE PROGRESSION</div>
+      <p class="feature-desc">Dashboard personnel avec statistiques, streaks et objectifs. Vois concrètement l'amélioration de ta mémoire semaine après semaine.</p>
+    </div>
+  </div>
+</section>
+
+<!-- AI CHAT -->
+<section id="chat">
+  <div class="chat-section">
+    <div class="chat-info fade-up">
+      <div class="section-label">// 02 — Intelligence Artificielle</div>
+      <h2>TON COACH<br>IA MÉMOIRE</h2>
+      <p>Pose n'importe quelle question sur la mémoire. L'IA connaît toutes les techniques du livre et des neurosciences. Elle t'explique, t'entraîne et te motive.</p>
+      <p>Alimenté par Claude (Anthropic) — l'un des modèles IA les plus avancés du monde.</p>
+      <a href="#pricing" class="btn-primary">Accéder au coach →</a>
+    </div>
+    <div class="fade-up">
+      <div class="chat-window">
+        <div class="chat-header">
+          <div class="chat-dot red"></div>
+          <div class="chat-dot yellow"></div>
+          <div class="chat-dot green"></div>
+          <div class="chat-title">memoryos-ai · en ligne</div>
+        </div>
+        <div class="chat-body" id="chatBody">
+          <div class="msg ai">
+            <div class="msg-avatar">M</div>
+            <div class="msg-bubble">Salut ! Je suis ton coach mémoire IA 🧠 Pose-moi n'importe quelle question sur la mémoire ou les techniques de mémorisation !</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Ex: Comment mémoriser des listes rapidement ?" />
+          <button class="chat-send" onclick="sendMessage()">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CURRICULUM -->
+<section class="curriculum" id="curriculum">
+  <div class="fade-up">
+    <div class="section-label">// 03 — Programme</div>
+    <h2>16 MODULES<br>COMPLETS</h2>
+    <p style="color:rgba(245,240,232,0.5); font-weight:300; max-width:500px; line-height:1.8;">De la compréhension du cerveau aux techniques avancées — tout ce dont tu as besoin pour transformer ta mémoire.</p>
+  </div>
+  <div class="chapters-grid fade-up" style="transition-delay:0.2s">
+    <div class="chapter-item">
+      <div class="chapter-num">01</div>
+      <div class="chapter-info">
+        <h3>Cultiver sa mémoire</h3>
+        <p>Défaillances, trous de mémoire, mécanismes de base — comprendre pour mieux agir.</p>
+      </div>
+      <span class="chapter-tag">BASE</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">02</div>
+      <div class="chapter-info">
+        <h3>Chasser les mythes</h3>
+        <p>Réalité vs fiction — séparer le vrai du faux pour se concentrer sur ce qui marche.</p>
+      </div>
+      <span class="chapter-tag">THÉORIE</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">03</div>
+      <div class="chapter-info">
+        <h3>Fonctionnement du cerveau</h3>
+        <p>Hémisphères, lobes, neurones, mémoire à court et long terme — la science expliquée simplement.</p>
+      </div>
+      <span class="chapter-tag">SCIENCE</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">04</div>
+      <div class="chapter-info">
+        <h3>Être zen pour mieux retenir</h3>
+        <p>Stress, relaxation, méditation, sommeil — les conditions optimales pour mémoriser.</p>
+      </div>
+      <span class="chapter-tag">BIEN-ÊTRE</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">05</div>
+      <div class="chapter-info">
+        <h3>Trucs & astuces mémo</h3>
+        <p>Mnémoniques, méthode des crochets, des lieux, histoires — les outils fondamentaux.</p>
+      </div>
+      <span class="chapter-tag">PRATIQUE</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">06</div>
+      <div class="chapter-info">
+        <h3>Remédier aux manques</h3>
+        <p>Brouillard mémoriel, blocages, écoute sélective — identifier et corriger ses failles.</p>
+      </div>
+      <span class="chapter-tag">DIAGNOSTIC</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">07</div>
+      <div class="chapter-info">
+        <h3>Mémoire & vieillissement</h3>
+        <p>Maintenir un cerveau exceptionnel à tout âge — gymnase mental pour rester vif.</p>
+      </div>
+      <span class="chapter-tag">LONGÉVITÉ</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">08</div>
+      <div class="chapter-info">
+        <h3>Mémoire pour l'école</h3>
+        <p>Apprentissage, révisions, examens — les méthodes gagnantes pour les étudiants.</p>
+      </div>
+      <span class="chapter-tag">ÉTUDIANT</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">09</div>
+      <div class="chapter-info">
+        <h3>Mémoire au travail</h3>
+        <p>Procédures, réunions, présentations — booster sa performance professionnelle.</p>
+      </div>
+      <span class="chapter-tag">PRO</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">10</div>
+      <div class="chapter-info">
+        <h3>Lire & retenir</h3>
+        <p>Techniques de lecture active pour mémoriser livres, articles et documents.</p>
+      </div>
+      <span class="chapter-tag">LECTURE</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">11</div>
+      <div class="chapter-info">
+        <h3>Se souvenir des personnes</h3>
+        <p>Visages, prénoms, associations — ne plus jamais oublier quelqu'un.</p>
+      </div>
+      <span class="chapter-tag">SOCIAL</span>
+    </div>
+    <div class="chapter-item">
+      <div class="chapter-num">12</div>
+      <div class="chapter-info">
+        <h3>Dates & chiffres</h3>
+        <p>Rimes, codage numérique, signaux — graver les dates importantes dans le marbre.</p>
+      </div>
+      <span class="chapter-tag">CHIFFRES</span>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="quiz-section" id="quiz">
+  <div class="quiz-wrapper">
+    <div class="fade-up">
+      <div class="section-label">// 04 — Quiz Interactif</div>
+      <h2>TESTE TES<br>CONNAISSANCES</h2>
+      <p style="color:rgba(245,240,232,0.55); font-weight:300; line-height:1.8; margin-bottom:2rem;">Des questions issues directement des meilleures recherches en neurosciences. Chaque quiz renforce ta mémoire par la répétition espacée.</p>
+      <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+        <div style="background:var(--black); border:1px solid var(--gray2); padding:1rem 1.5rem; border-radius:4px; text-align:center;">
+          <div style="font-family:var(--font-display); font-size:2rem; color:var(--gold);" id="quizScore">0</div>
+          <div style="font-size:0.7rem; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase;">Score</div>
+        </div>
+        <div style="background:var(--black); border:1px solid var(--gray2); padding:1rem 1.5rem; border-radius:4px; text-align:center;">
+          <div style="font-family:var(--font-display); font-size:2rem; color:var(--gold);" id="quizTotal">0</div>
+          <div style="font-size:0.7rem; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase;">Questions</div>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-card fade-up" style="transition-delay:0.2s">
+      <div class="stars">★★★★★</div>
+      <div id="questionCounter" style="font-family:var(--font-mono); font-size:0.7rem; color:var(--gold); margin-bottom:1rem; letter-spacing:0.15em;">QUESTION 1 / 5</div>
+      <div class="quiz-question" id="quizQuestion">Quelle est la technique qui consiste à imaginer un chemin familier pour mémoriser une liste ?</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+      <button class="btn-primary quiz-next" id="quizNext" onclick="nextQuestion()">Question suivante →</button>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--black);">
+  <div class="fade-up" style="text-align:center; max-width:600px; margin:0 auto 5rem;">
+    <div class="section-label">// 05 — Tarifs</div>
+    <h2>SIMPLE.<br>TRANSPARENT.</h2>
+    <p style="color:rgba(245,240,232,0.5); font-weight:300; line-height:1.8;">Commence gratuitement. Upgrade quand tu vois les résultats.</p>
+  </div>
+  <div class="pricing-grid fade-up">
+    <div class="pricing-card">
+      <div class="pricing-plan">Starter</div>
+      <div class="pricing-price"><sup>€</sup>0</div>
+      <div class="pricing-period">Pour toujours</div>
+      <ul class="pricing-features">
+        <li>3 modules d'introduction</li>
+        <li>10 questions de quiz / mois</li>
+        <li>Coach IA limité (5 questions)</li>
+        <li class="off">Quiz adaptatifs avancés</li>
+        <li class="off">Suivi de progression</li>
+        <li class="off">Tous les 16 modules</li>
+      </ul>
+      <a href="#" class="btn-ghost" style="width:100%; justify-content:center;">Commencer →</a>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-badge">LE PLUS POPULAIRE</div>
+      <div class="pricing-plan">Pro</div>
+      <div class="pricing-price"><sup>€</sup>19</div>
+      <div class="pricing-period">par mois — sans engagement</div>
+      <ul class="pricing-features">
+        <li>Accès aux 16 modules complets</li>
+        <li>Quiz adaptatifs illimités</li>
+        <li>Coach IA illimité</li>
+        <li>Suivi de progression avancé</li>
+        <li>Nouvelles techniques chaque semaine</li>
+        <li>Support prioritaire</li>
+      </ul>
+      <a href="#" class="btn-primary" style="width:100%; justify-content:center;">Essayer 7 jours gratuit →</a>
+    </div>
+    <div class="pricing-card">
+      <div class="pricing-plan">Lifetime</div>
+      <div class="pricing-price"><sup>€</sup>149</div>
+      <div class="pricing-period">paiement unique — accès à vie</div>
+      <ul class="pricing-features">
+        <li>Tout le plan Pro inclus</li>
+        <li>Toutes les futures mises à jour</li>
+        <li>Accès aux futurs modules</li>
+        <li>Communauté Discord exclusive</li>
+        <li>Sessions de groupe mensuelles</li>
+        <li>Certificat de maîtrise</li>
+      </ul>
+      <a href="#" class="btn-ghost" style="width:100%; justify-content:center;">Accès à vie →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="fade-up" style="text-align:center; max-width:500px; margin:0 auto 1rem;">
+    <div class="section-label">// 06 — Témoignages</div>
+    <h2>ILS ONT<br>TRANSFORMÉ<br>LEUR MÉMOIRE</h2>
+  </div>
+  <div class="testimonials-grid fade-up" style="transition-delay:0.2s">
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">J'avais une mémoire catastrophique pour les noms. Après 3 semaines avec MemoryOS, je retiens le prénom de tout le monde que je rencontre. Incroyable.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">S</div>
+        <div>
+          <div class="author-name">Sarah M.</div>
+          <div class="author-role">Commerciale, Lyon</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">Le coach IA est bluffant. Je lui pose des questions spécifiques à mes révisions et il m'explique exactement quelle technique utiliser. Mes notes ont grimpé.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">K</div>
+        <div>
+          <div class="author-name">Karim B.</div>
+          <div class="author-role">Étudiant en médecine, Paris</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">À 58 ans j'avais peur de perdre la mémoire. MemoryOS m'a donné des outils concrets. Mon cerveau est plus vif qu'à 40 ans. Je recommande à tout le monde.</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">F</div>
+        <div>
+          <div class="author-name">François D.</div>
+          <div class="author-role">Chef de projet, Bordeaux</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta">
+  <h2>COMMENCE<br>AUJOURD'HUI</h2>
+  <p>Ta mémoire est un muscle. Plus tu l'entraînes, plus elle devient puissante. Commence gratuitement dès maintenant.</p>
+  <a href="#pricing" class="btn-dark">Démarrer gratuitement →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <span class="logo">Memory<span>OS</span></span>
+    <p>La plateforme IA qui transforme les neurosciences en entraînement quotidien. Mémorise plus. Apprends plus vite. Vis mieux.</p>
+  </div>
+  <div>
+    <h4>Produit</h4>
+    <ul>
+      <li><a href="#">Fonctionnalités</a></li>
+      <li><a href="#">Programme</a></li>
+      <li><a href="#">Tarifs</a></li>
+      <li><a href="#">FAQ</a></li>
+    </ul>
+  </div>
+  <div>
+    <h4>Ressources</h4>
+    <ul>
+      <li><a href="#">Blog Mémoire</a></li>
+      <li><a href="#">Guide Gratuit</a></li>
+      <li><a href="#">Podcast</a></li>
+      <li><a href="#">Newsletter</a></li>
+    </ul>
+  </div>
+  <div>
+    <h4>Légal</h4>
+    <ul>
+      <li><a href="#">Confidentialité</a></li>
+      <li><a href="#">CGU</a></li>
+      <li><a href="#">Mentions légales</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <p>© 2025 MemoryOS. Tous droits réservés.</p>
+  <p style="font-family:var(--font-mono); font-size:0.7rem;">Propulsé par Claude AI · Déployé sur Vercel</p>
+</div>
+
+<script>
+// ─── QUIZ ENGINE ───
+const questions = [
+  {
+    q: "Quelle technique consiste à imaginer un chemin familier pour mémoriser une liste ?",
+    opts: ["Le chunking", "La méthode des lieux", "La boucle phonologique", "Le codage numérique"],
+    ans: 1,
+    expl: "✓ La méthode des lieux (ou palais de mémoire) consiste à placer mentalement les éléments dans des endroits familiers d'un trajet imaginaire."
+  },
+  {
+    q: "Quel est le principal ennemi de la mémoire à court terme selon les neurosciences ?",
+    opts: ["La fatigue", "Le multitâche", "L'âge", "Le manque de vitamines"],
+    ans: 1,
+    expl: "✓ Le multitâche épuise la mémoire à court terme car aucune tâche ne bénéficie d'une attention complète, rendant la mémorisation impossible."
+  },
+  {
+    q: "La 'répétition espacée' consiste à réviser :",
+    opts: ["Tout la veille de l'examen", "À intervalles croissants dans le temps", "10 fois de suite le même jour", "En groupe uniquement"],
+    ans: 1,
+    expl: "✓ La répétition espacée exploite la courbe de l'oubli d'Ebbinghaus : réviser juste avant d'oublier ancre l'information en mémoire à long terme."
+  },
+  {
+    q: "Quel nutriment est particulièrement bénéfique pour la mémoire selon le livre ?",
+    opts: ["La caféine à haute dose", "Les vitamines B et antioxydants", "Le sucre raffiné", "L'alcool en faible quantité"],
+    ans: 1,
+    expl: "✓ Les vitamines B participent à la fabrication des neurotransmetteurs, et les antioxydants protègent les cellules cérébrales contre les radicaux libres."
+  },
+  {
+    q: "Qu'est-ce que le 'chunking' (ou agrégation) en mémorisation ?",
+    opts: ["Apprendre en écoutant de la musique", "Diviser l'info en petits groupes logiques", "Réciter à voix haute", "Relire 5 fois le même texte"],
+    ans: 1,
+    expl: "✓ Le chunking consiste à regrouper des informations en blocs cohérents, comme mémoriser un numéro de sécu par groupes plutôt que chiffre par chiffre."
+  }
+];
+
+let currentQ = 0;
+let score = 0;
+let answered = false;
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('quizQuestion').textContent = q.q;
+  document.getElementById('questionCounter').textContent = `QUESTION ${currentQ + 1} / ${questions.length}`;
+  
+  const opts = document.getElementById('quizOptions');
+  opts.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+  
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.innerHTML = `<span class="quiz-opt-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => checkAnswer(i, btn);
+    opts.appendChild(btn);
+  });
+  
+  document.getElementById('quizFeedback').className = 'quiz-feedback';
+  document.getElementById('quizFeedback').textContent = '';
+  document.getElementById('quizNext').className = 'btn-primary quiz-next';
+  answered = false;
+}
+
+function checkAnswer(i, btn) {
+  if (answered) return;
+  answered = true;
+  
+  const q = questions[currentQ];
+  const allBtns = document.querySelectorAll('.quiz-opt');
+  const fb = document.getElementById('quizFeedback');
+  
+  allBtns.forEach(b => b.onclick = null);
+  
+  if (i === q.ans) {
+    btn.classList.add('correct');
+    fb.textContent = q.expl;
+    fb.className = 'quiz-feedback show correct-fb';
+    score++;
+    document.getElementById('quizScore').textContent = score;
+  } else {
+    btn.classList.add('wrong');
+    allBtns[q.ans].classList.add('correct');
+    fb.textContent = '✗ Pas tout à fait — ' + q.expl.replace('✓ ', '');
+    fb.className = 'quiz-feedback show wrong-fb';
+  }
+  
+  document.getElementById('quizTotal').textContent = currentQ + 1;
+  document.getElementById('quizNext').className = 'btn-primary quiz-next show';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ < questions.length) {
+    renderQuestion();
+  } else {
+    const pct = Math.round((score / questions.length) * 100);
+    document.querySelector('.quiz-card').innerHTML = `
+      <div style="text-align:center; padding:2rem 0;">
+        <div style="font-size:4rem; margin-bottom:1rem;">🏆</div>
+        <div style="font-family:var(--font-display); font-size:5rem; color:var(--gold); line-height:1;">${pct}%</div>
+        <div style="font-size:1rem; margin:1rem 0; font-weight:600;">Score final : ${score}/${questions.length}</div>
+        <p style="color:rgba(245,240,232,0.55); font-size:0.9rem; margin-bottom:2rem;">${pct >= 80 ? "Excellent ! Tu maîtrises bien les bases. 🎯" : pct >= 60 ? "Bon travail ! Continue l'entraînement. 💪" : "Continue — la pratique fait la perfection. 📚"}</p>
+        <button class="btn-primary" onclick="restartQuiz()" style="width:100%; justify-content:center;">Recommencer →</button>
+      </div>
+    `;
+  }
+}
+
+function restartQuiz() {
+  currentQ = 0;
+  score = 0;
+  answered = false;
+  document.getElementById('quizScore').textContent = '0';
+  document.getElementById('quizTotal').textContent = '0';
+  document.querySelector('.quiz-card').innerHTML = `
+    <div class="stars">★★★★★</div>
+    <div id="questionCounter" style="font-family:var(--font-mono); font-size:0.7rem; color:var(--gold); margin-bottom:1rem; letter-spacing:0.15em;">QUESTION 1 / 5</div>
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback"></div>
+    <button class="btn-primary quiz-next" id="quizNext" onclick="nextQuestion()">Question suivante →</button>
+  `;
+  renderQuestion();
+}
+
+renderQuestion();
+
+// ─── AI CHAT ───
+const aiKnowledge = {
+  "liste": "Pour mémoriser une liste, utilise la **méthode des lieux** : imagine un trajet familier (ton appartement, ta rue...) et 'place' chaque élément à un endroit précis. Quand tu veux te souvenir, tu 'marches' mentalement dans ce lieu ! 🏠",
+  "stress": "Le stress est l'ennemi n°1 de ta mémoire. Quand tu es stressé, ton cerveau libère du cortisol qui bloque la mémorisation. Essaie : 4 sec d'inspiration → 7 sec de pause → 8 sec d'expiration. Répète 3 fois avant une tâche importante. 🧘",
+  "nom": "Pour retenir un prénom, utilise l'**association** : trouve un trait physique marquant + associe-le au prénom (ex: 'Bernard a un grand nez' → 'Bernard comme un ours au grand museau'). Répète le prénom 3 fois dans la conversation. 👤",
+  "sommeil": "Le sommeil est CRUCIAL pour la mémoire. Pendant le sommeil profond, ton cerveau 'imprime' les souvenirs de la journée en mémoire à long terme. Dors 7-8h, évite les écrans 1h avant, garde une heure de coucher régulière. 😴",
+  "examen": "Pour un examen : commence les révisions 3 semaines avant, utilise la répétition espacée (J1 → J3 → J7 → J14), crée des fiches visuelles, explique les concepts à voix haute. Bachoter la veille est la PIRE méthode ! 📚",
+  "mnemoni": "Les mnémoniques sont des astuces pour coder l'info de façon mémorable : acronymes (ex: ROYGBIV pour les couleurs de l'arc-en-ciel), rimes, histoires absurdes... Plus c'est bizarre et émotionnel, plus ça colle ! 🎯",
+  "vieux": "La mémoire peut s'améliorer à tout âge ! Ton cerveau a une neuroplasticité jusqu'à la mort. La clé : nouveautés régulières (apprendre une langue, un instrument), exercice physique 3x/semaine, alimentation riche en oméga-3, et défis mentaux quotidiens. 💪",
+  "default": "Super question ! Le principe clé de la mémoire : **attention + association + répétition**. Sans attention, rien ne s'encode. Avec de bonnes associations, tout se retient. Avec de la répétition espacée, rien ne s'oublie. Quelle technique veux-tu approfondir ? 🧠"
+};
+
+function getAIResponse(input) {
+  const lower = input.toLowerCase();
+  for (const [key, resp] of Object.entries(aiKnowledge)) {
+    if (lower.includes(key)) return resp;
+  }
+  return aiKnowledge.default;
+}
+
+function addMessage(text, type) {
+  const body = document.getElementById('chatBody');
+  const msg = document.createElement('div');
+  msg.className = `msg ${type}`;
+  msg.innerHTML = `
+    <div class="msg-avatar">${type === 'ai' ? 'M' : 'T'}</div>
+    <div class="msg-bubble">${text}</div>
+  `;
+  body.appendChild(msg);
+  body.scrollTop = body.scrollHeight;
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  addMessage(text, 'user');
+  input.value = '';
+  
+  setTimeout(() => {
+    const resp = getAIResponse(text);
+    addMessage(resp, 'ai');
+  }, 600);
+}
+
+document.getElementById('chatInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+// ─── SCROLL ANIMATIONS ───
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
