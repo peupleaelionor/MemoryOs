@@ -768,7 +768,7 @@
         body: JSON.stringify({ message: trimmed, history: recentHistory })
       });
 
-      if (!res.ok) throw new Error('API_UNAVAILABLE');
+      if (!res.ok) throw new Error('API_UNAVAILABLE_' + res.status);
 
       var data = await res.json();
       var reply = (data && (data.reply || data.message || data.response)) || 'Désolé, je n\'ai pas pu générer de réponse.';
