@@ -674,6 +674,23 @@
   // ── Live Chat Widget ─────────────────────────────────────────
   let chatHistory = [];
 
+  // Réponses démo pour le widget chat (mode hors-ligne)
+  const widgetDemoResponses = [
+    "🧠 La répétition espacée est l'une des techniques les plus puissantes ! Révise à J+1, J+7, J+30 et J+90 pour ancrer durablement l'information.",
+    "🏛️ Le palais de mémoire consiste à placer mentalement des informations dans un lieu familier. Chaque pièce devient un « crochet » pour un souvenir !",
+    "💡 Le chunking regroupe les informations en blocs. Ton cerveau retient mieux 5 groupes que 10 éléments isolés.",
+    "😴 Le sommeil est crucial ! Pendant le sommeil REM, ton cerveau consolide les souvenirs. Vise 7-9h de sommeil par nuit.",
+    "🎯 La technique Feynman : explique un concept comme si tu l'enseignais à un enfant. Si tu bloques, c'est que tu dois approfondir !",
+    "⏱️ 15 minutes par jour d'entraînement ciblé suffisent pour améliorer ta mémoire en 30 jours. La régularité est la clé !",
+  ];
+  let widgetDemoIdx = 0;
+
+  function getWidgetDemoReply() {
+    const reply = widgetDemoResponses[widgetDemoIdx % widgetDemoResponses.length];
+    widgetDemoIdx++;
+    return reply;
+  }
+
   function toggleChat() {
     const win = document.getElementById('chat-window');
     win.classList.toggle('open');
@@ -703,6 +720,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: msg, history: chatHistory.slice(-10) }),
       });
+
+      if (!res.ok) throw new Error('API_UNAVAILABLE');
+
       const data = await res.json();
       const aiReply = data.response || 'Désolé, une erreur s\'est produite.';
 
@@ -712,8 +732,12 @@
 
       chatHistory.push({ role: 'assistant', content: aiReply });
     } catch {
+      // Mode démo : réponse locale
       const msgs = document.getElementById('chat-win-messages');
-      msgs.lastChild.textContent = 'Erreur de connexion — réessaie.';
+      const demoReply = '✨ [Démo] ' + getWidgetDemoReply();
+      msgs.lastChild.textContent = demoReply;
+
+      chatHistory.push({ role: 'assistant', content: demoReply });
     }
 
     btn.disabled = false;

@@ -1,0 +1,12 @@
+{
+  "name": "memoryos",
+  "version": "1.0.0",
+  "description": "MemoryOS — Mémorise 3× plus vite avec l'IA",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "stripe": "^17.7.0"
+  }
+}
