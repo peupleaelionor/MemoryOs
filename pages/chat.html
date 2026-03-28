@@ -560,6 +560,59 @@
   let history = [];
   let isSending = false;
 
+  /* ── Réponses démo (mode hors-ligne quand l'API n'est pas disponible) ── */
+  const DEMO_RESPONSES = [
+    "🧠 **La répétition espacée** est l'une des techniques les plus puissantes ! Révise à J+1, J+7, J+30 et J+90 pour ancrer durablement l'information. Essaie avec une liste de 10 mots aujourd'hui !",
+    "🏛️ **Le palais de mémoire** (méthode des loci) consiste à placer mentalement des informations dans un lieu que tu connais bien. Imagine ta maison : chaque pièce devient un « crochet » pour un souvenir. C'est la technique des champions de mémoire !",
+    "💡 **Le chunking** consiste à regrouper les informations en blocs. Par exemple, le numéro 0612345678 devient 06-12-34-56-78. Ton cerveau retient mieux 5 groupes que 10 chiffres isolés.",
+    "😴 **Le sommeil est crucial** pour la mémoire ! Pendant le sommeil paradoxal (REM), ton cerveau consolide les souvenirs de la journée. Vise 7-9h de sommeil et évite les écrans 1h avant de dormir.",
+    "🥑 **Nutrition et mémoire** : les Oméga-3 (poissons gras, noix) sont essentiels pour tes neurones. Les myrtilles, le curcuma et le chocolat noir sont aussi d'excellents alliés pour ta mémoire !",
+    "🎯 **La technique Feynman** : pour vraiment comprendre et retenir un concept, explique-le comme si tu l'enseignais à un enfant de 10 ans. Si tu bloques, c'est que tu dois approfondir ce point.",
+    "✨ **Les mnémoniques** sont des aide-mémoire créatifs. Par exemple, pour retenir l'ordre des planètes : « Mon Vieux Tu M'as Jeté Sur Une Nouvelle Planète » (Mercure, Vénus, Terre, Mars, Jupiter, Saturne, Uranus, Neptune, Pluton).",
+    "🧩 **Le mind mapping** active les deux hémisphères du cerveau. Place le concept central au milieu, puis crée des branches avec des mots-clés et des images. C'est 3× plus efficace que la prise de notes linéaire !",
+    "⏱️ **15 minutes par jour** d'entraînement ciblé suffisent pour améliorer significativement ta mémoire en 30 jours. La régularité est plus importante que la durée !",
+    "🔥 **L'effet de testing** : se tester régulièrement est plus efficace que relire ses notes. C'est exactement ce que fait notre quiz ! Chaque test renforce la trace mnésique.",
+    "🎵 **L'association sensorielle** : associe ce que tu apprends à une mélodie, une odeur ou une émotion. L'odorat est le sens le plus directement lié à la mémoire (via le système limbique).",
+    "📝 **L'écriture manuscrite** active plus de zones cérébrales que le clavier. Pour les informations importantes, écris-les à la main au moins une fois !"
+  ];
+  let demoIndex = 0;
+
+  /** Génère une réponse démo locale quand l'API n'est pas disponible */
+  function getDemoResponse(userMessage) {
+    var msg = userMessage.toLowerCase();
+
+    // Réponses contextuelles basiques
+    if (msg.includes('répétition') || msg.includes('espacé') || msg.includes('révision')) {
+      return DEMO_RESPONSES[0];
+    }
+    if (msg.includes('palais') || msg.includes('loci') || msg.includes('lieu')) {
+      return DEMO_RESPONSES[1];
+    }
+    if (msg.includes('chunk') || msg.includes('group') || msg.includes('bloc')) {
+      return DEMO_RESPONSES[2];
+    }
+    if (msg.includes('sommeil') || msg.includes('dormir') || msg.includes('nuit')) {
+      return DEMO_RESPONSES[3];
+    }
+    if (msg.includes('nutrition') || msg.includes('aliment') || msg.includes('manger') || msg.includes('omega')) {
+      return DEMO_RESPONSES[4];
+    }
+    if (msg.includes('feynman') || msg.includes('enseign') || msg.includes('expliqu')) {
+      return DEMO_RESPONSES[5];
+    }
+    if (msg.includes('mnémo') || msg.includes('acronyme') || msg.includes('astuce')) {
+      return DEMO_RESPONSES[6];
+    }
+    if (msg.includes('mind map') || msg.includes('carte mentale') || msg.includes('schéma')) {
+      return DEMO_RESPONSES[7];
+    }
+
+    // Réponse tournante pour les autres messages
+    var response = DEMO_RESPONSES[demoIndex % DEMO_RESPONSES.length];
+    demoIndex++;
+    return response;
+  }
+
   /* ─────────── Fonctions utilitaires ─────────── */
 
   /** Formater un timestamp en heure locale courte */
@@ -715,7 +768,7 @@
         body: JSON.stringify({ message: trimmed, history: recentHistory })
       });
 
-      if (!res.ok) throw new Error('Erreur serveur (' + res.status + ')');
+      if (!res.ok) throw new Error('API_UNAVAILABLE');
 
       var data = await res.json();
       var reply = (data && (data.reply || data.message || data.response)) || 'Désolé, je n\'ai pas pu générer de réponse.';
@@ -724,14 +777,11 @@
       history.push(aiMsg);
       renderMessage(aiMsg);
     } catch (err) {
-      /* Message d'erreur convivial */
-      var errorMsg = {
-        role: 'error',
-        text: 'Oups, une erreur est survenue 😕 Vérifie ta connexion et réessaie. (' + escapeHTML(err.message) + ')',
-        time: Date.now()
-      };
-      history.push(errorMsg);
-      renderMessage(errorMsg);
+      /* Mode démo : réponse locale quand l'API n'est pas disponible */
+      var demoReply = getDemoResponse(trimmed);
+      var aiMsg = { role: 'ai', text: '✨ [Mode démo] ' + demoReply, time: Date.now() };
+      history.push(aiMsg);
+      renderMessage(aiMsg);
     } finally {
       showTyping(false);
       saveHistory();

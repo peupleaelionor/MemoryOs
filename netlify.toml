@@ -1,0 +1,83 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# ── URL Redirects (clean URLs → actual files) ──────────────────
+[[redirects]]
+  from = "/api/chat"
+  to = "/.netlify/functions/chat"
+  status = 200
+
+[[redirects]]
+  from = "/api/quiz"
+  to = "/.netlify/functions/quiz"
+  status = 200
+
+[[redirects]]
+  from = "/api/progress"
+  to = "/.netlify/functions/progress"
+  status = 200
+
+[[redirects]]
+  from = "/api/create-checkout"
+  to = "/.netlify/functions/create-checkout"
+  status = 200
+
+[[redirects]]
+  from = "/api/webhook"
+  to = "/.netlify/functions/webhook"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/pages/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/chat"
+  to = "/pages/chat.html"
+  status = 200
+
+[[redirects]]
+  from = "/quiz"
+  to = "/pages/quiz.html"
+  status = 200
+
+[[redirects]]
+  from = "/app/dashboard"
+  to = "/app/dashboard/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/app/chat"
+  to = "/app/chat/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/app/quiz"
+  to = "/app/quiz/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/modules"
+  to = "/app/modules/index.html"
+  status = 200
+
+# ── Security & CORS Headers ────────────────────────────────────
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
