@@ -1052,13 +1052,14 @@
     }
   })();
 
-  // ── Animated Counters ───────────────────────────────────────
-  function animateCounters() {
-    document.querySelectorAll('[data-count]').forEach(el => {
+  // ── Animated Counters (IntersectionObserver) ─────────────────
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
       if (el.dataset.animated) return;
-      const rect = el.getBoundingClientRect();
-      if (rect.top > window.innerHeight || rect.bottom < 0) return;
       el.dataset.animated = 'true';
+      counterObserver.unobserve(el);
       const target = parseInt(el.dataset.count);
       const suffix = el.dataset.suffix || '';
       const duration = 1200;
@@ -1072,9 +1073,8 @@
       }
       requestAnimationFrame(tick);
     });
-  }
-  window.addEventListener('scroll', animateCounters, { passive: true });
-  animateCounters();
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
 
   // ── Memory Card Game ────────────────────────────────────────
   const GAME_EMOJIS = ['🧠', '🏛️', '📚', '🎯', '💡', '⚡'];
@@ -1170,10 +1170,13 @@
   }
 
   // Auto-init game when section is visible
+  let gameInitialized = false;
   const gameObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting && !document.getElementById('game-grid').children.length) {
+      if (entry.isIntersecting && !gameInitialized) {
+        gameInitialized = true;
         initMemoryGame();
+        gameObserver.unobserve(entry.target);
       }
     });
   }, { threshold: 0.3 });
