@@ -14,6 +14,8 @@
       --dark3: #1e1e3f;
       --purple: #6c3fc5;
       --purple-light: #8b5cf6;
+      --green: #22c55e;
+      --red: #ef4444;
       --text: #e8e8f0;
       --text-muted: #9090b0;
       --radius: 14px;
@@ -49,35 +51,88 @@
     }
     .nav-cta:hover { background: var(--gold-light); }
 
+    /* ── HERO PARTICLES ── */
+    .hero-particles {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      overflow: hidden; pointer-events: none;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: radial-gradient(circle, var(--gold), transparent);
+      opacity: 0; animation: particleFloat linear infinite;
+    }
+    @keyframes particleFloat {
+      0% { opacity: 0; transform: translateY(0) scale(0); }
+      10% { opacity: 0.6; }
+      90% { opacity: 0; }
+      100% { opacity: 0; transform: translateY(-100vh) scale(1); }
+    }
+
+    /* ── GRADIENT TEXT ANIMATION ── */
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--gold), var(--purple-light), var(--gold-light), var(--gold));
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease-in-out infinite;
+    }
+
+    /* ── PULSE CTA ── */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(240,165,0,0.5); }
+      50% { box-shadow: 0 0 20px 8px rgba(240,165,0,0.25); }
+    }
+
     /* ── HERO ── */
     .hero {
       min-height: 100vh; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       text-align: center; padding: 6rem 1.5rem 4rem;
       background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(108,63,197,0.3) 0%, transparent 70%);
+      position: relative; overflow: hidden;
     }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 0.4rem;
       background: rgba(240,165,0,0.15); border: 1px solid rgba(240,165,0,0.3);
       color: var(--gold); padding: 0.4rem 1rem; border-radius: 50px;
       font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem;
+      animation: fadeInDown 0.8s ease-out;
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .hero h1 {
       font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 900; line-height: 1.15;
       margin-bottom: 1.25rem; letter-spacing: -1px;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
     }
     .hero h1 .accent { color: var(--gold); }
     .hero p {
       font-size: clamp(1rem, 2vw, 1.2rem); color: var(--text-muted);
       max-width: 600px; margin: 0 auto 2.5rem;
+      animation: fadeInUp 0.8s ease-out 0.4s both;
     }
-    .hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero-ctas {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
     .btn-primary {
       background: var(--gold); color: var(--dark); font-weight: 800;
       padding: 0.9rem 2rem; border-radius: var(--radius); text-decoration: none;
-      font-size: 1.05rem; transition: transform .2s, background .2s; display: inline-block;
+      font-size: 1.05rem; transition: transform .2s, background .2s, box-shadow .2s;
+      display: inline-block; animation: pulseGlow 2.5s ease-in-out infinite;
     }
-    .btn-primary:hover { transform: translateY(-2px); background: var(--gold-light); }
+    .btn-primary:hover { transform: translateY(-2px); background: var(--gold-light); box-shadow: 0 0 30px rgba(240,165,0,0.4); }
     .btn-outline {
       border: 2px solid rgba(240,165,0,0.4); color: var(--gold); font-weight: 700;
       padding: 0.9rem 2rem; border-radius: var(--radius); text-decoration: none;
@@ -86,11 +141,153 @@
     .btn-outline:hover { border-color: var(--gold); background: rgba(240,165,0,0.08); }
     .hero-stats {
       display: flex; gap: 3rem; justify-content: center; margin-top: 3.5rem;
-      flex-wrap: wrap;
+      flex-wrap: wrap; animation: fadeInUp 0.8s ease-out 0.8s both;
     }
     .stat { text-align: center; }
     .stat-number { font-size: 2rem; font-weight: 900; color: var(--gold); }
     .stat-label { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── SOCIAL PROOF BAR ── */
+    .social-proof {
+      background: var(--dark2); border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 1.5rem; text-align: center;
+    }
+    .social-proof-inner {
+      max-width: 900px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: center; gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .proof-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.9rem; color: var(--text-muted);
+    }
+    .proof-item strong { color: var(--gold); font-weight: 800; font-size: 1.1rem; }
+    .proof-avatars { display: flex; margin-right: 0.5rem; }
+    .proof-avatars span {
+      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 0.85rem; border: 2px solid var(--dark2);
+      margin-right: -8px; background: var(--dark3);
+    }
+
+    /* ── STAGGERED CARD ANIMATIONS ── */
+    .feature-card, .module-card, .testimonial, .plan-card {
+      transition: border-color .2s, transform .3s, box-shadow .3s;
+    }
+    .feature-card:hover, .testimonial:hover {
+      box-shadow: 0 8px 32px rgba(240,165,0,0.1);
+    }
+    .reveal .feature-card { opacity: 0; transform: translateY(25px); transition: all 0.5s ease-out; }
+    .reveal.visible .feature-card { opacity: 1; transform: translateY(0); }
+    .reveal.visible .feature-card:nth-child(1) { transition-delay: 0s; }
+    .reveal.visible .feature-card:nth-child(2) { transition-delay: 0.1s; }
+    .reveal.visible .feature-card:nth-child(3) { transition-delay: 0.2s; }
+    .reveal.visible .feature-card:nth-child(4) { transition-delay: 0.3s; }
+    .reveal.visible .feature-card:nth-child(5) { transition-delay: 0.4s; }
+    .reveal.visible .feature-card:nth-child(6) { transition-delay: 0.5s; }
+
+    /* ── MEMORY GAME ── */
+    .game-section { background: var(--dark2); }
+    .game-container { max-width: 500px; margin: 0 auto; }
+    .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+    .game-score { font-size: 0.9rem; color: var(--text-muted); }
+    .game-score strong { color: var(--gold); }
+    .game-timer { font-size: 0.9rem; color: var(--gold); font-weight: 700; }
+    .game-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;
+      perspective: 1000px;
+    }
+    .game-card {
+      aspect-ratio: 1; border-radius: 12px; cursor: pointer;
+      position: relative; transform-style: preserve-3d;
+      transition: transform 0.5s ease;
+    }
+    .game-card.flipped { transform: rotateY(180deg); }
+    .game-card.matched { pointer-events: none; }
+    .game-card-face {
+      position: absolute; inset: 0; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; backface-visibility: hidden;
+    }
+    .game-card-back {
+      background: linear-gradient(135deg, var(--purple), var(--dark3));
+      border: 1px solid rgba(139,92,246,0.3);
+    }
+    .game-card-back::after { content: '🧠'; font-size: 1.4rem; }
+    .game-card-front {
+      background: var(--dark3); border: 1px solid rgba(255,255,255,0.1);
+      transform: rotateY(180deg);
+    }
+    .game-card.matched .game-card-front {
+      border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(240,165,0,0.3);
+      background: linear-gradient(135deg, rgba(240,165,0,0.15), var(--dark3));
+    }
+    .game-result {
+      text-align: center; padding: 2rem; display: none;
+    }
+    .game-result.show { display: block; }
+    .game-result h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .game-result p { color: var(--text-muted); margin-bottom: 1.5rem; }
+    .btn-game {
+      background: var(--gold); color: var(--dark); border: none; font-weight: 700;
+      padding: 0.75rem 1.5rem; border-radius: var(--radius); cursor: pointer;
+      font-size: 0.95rem; transition: all .2s;
+    }
+    .btn-game:hover { background: var(--gold-light); transform: translateY(-2px); }
+
+    /* ── SPEED CHALLENGE ── */
+    .challenge-section { background: var(--dark); }
+    .challenge-box {
+      max-width: 600px; margin: 0 auto;
+      background: var(--dark2); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--radius); padding: 2rem; text-align: center;
+    }
+    .challenge-sequence {
+      font-size: 2.5rem; letter-spacing: 0.5rem; font-weight: 900;
+      color: var(--gold); margin: 1.5rem 0; min-height: 3.5rem;
+      font-family: 'Courier New', monospace;
+    }
+    .challenge-input {
+      width: 100%; max-width: 300px; background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1); border-radius: 10px;
+      padding: 0.75rem 1rem; color: var(--text); font-size: 1.2rem;
+      text-align: center; letter-spacing: 0.3rem; font-weight: 700;
+      margin: 0 auto; display: block;
+      font-family: 'Courier New', monospace;
+    }
+    .challenge-input:focus { outline: none; border-color: var(--gold); }
+    .challenge-input::placeholder { color: var(--text-muted); letter-spacing: 0.1rem; font-weight: 400; }
+    .challenge-status {
+      margin-top: 1rem; font-size: 0.9rem; min-height: 1.5rem;
+      color: var(--text-muted);
+    }
+    .challenge-status.success { color: var(--green); }
+    .challenge-status.fail { color: var(--red); }
+    .challenge-levels {
+      display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;
+    }
+    .challenge-level {
+      padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem;
+      background: rgba(255,255,255,0.05); color: var(--text-muted); font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .challenge-level.active { background: rgba(240,165,0,0.15); color: var(--gold); border-color: var(--gold); }
+    .challenge-level.complete { background: rgba(34,197,94,0.15); color: var(--green); border-color: var(--green); }
+
+    /* ── CONFETTI ── */
+    .confetti-container {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 999; overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute; top: -10px;
+      width: 10px; height: 10px; border-radius: 2px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
 
     /* ── SECTION GÉNÉRIQUES ── */
     section { padding: 5rem 1.5rem; }
@@ -315,6 +512,12 @@
       .nav-links a { font-size: 1.2rem; }
       .hero-stats { gap: 1.5rem; }
       #chat-window { width: 300px; }
+      .game-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+      .game-card-face { font-size: 1.4rem; }
+      .game-card-back::after { font-size: 1.1rem; }
+      .challenge-sequence { font-size: 1.8rem; letter-spacing: 0.3rem; }
+      .social-proof-inner { gap: 1rem; }
+      .proof-item { font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -330,6 +533,7 @@
   <ul class="nav-links" id="nav-links">
     <li><a href="#features" onclick="closeMenu()">Fonctionnalités</a></li>
     <li><a href="#modules" onclick="closeMenu()">Modules</a></li>
+    <li><a href="#game" onclick="closeMenu()">Mini-Jeux</a></li>
     <li><a href="#pricing" onclick="closeMenu()">Tarifs</a></li>
     <li><a href="#faq" onclick="closeMenu()">FAQ</a></li>
   </ul>
@@ -338,8 +542,9 @@
 
 <!-- Hero -->
 <section class="hero">
+  <div class="hero-particles" id="hero-particles"></div>
   <div class="hero-badge">🧠 Propulsé par Claude AI (Anthropic)</div>
-  <h1>Mémorise <span class="accent">3× plus vite</span><br/>avec l'IA</h1>
+  <h1>Mémorise <span class="accent gradient-text">3× plus vite</span><br/>avec l'IA</h1>
   <p>MemoryOS transforme les neurosciences en entraînement quotidien. Coach IA, quiz adaptatifs et 16 modules basés sur les meilleures recherches scientifiques.</p>
   <div class="hero-ctas">
     <a href="/dashboard" class="btn-primary">🚀 Commencer gratuitement</a>
@@ -347,11 +552,11 @@
   </div>
   <div class="hero-stats">
     <div class="stat">
-      <div class="stat-number">16</div>
+      <div class="stat-number" data-count="16">0</div>
       <div class="stat-label">Modules scientifiques</div>
     </div>
     <div class="stat">
-      <div class="stat-number">3×</div>
+      <div class="stat-number" data-count="3" data-suffix="×">0</div>
       <div class="stat-label">Vitesse de mémorisation</div>
     </div>
     <div class="stat">
@@ -359,11 +564,26 @@
       <div class="stat-label">Coach personnalisé</div>
     </div>
     <div class="stat">
-      <div class="stat-number">15min</div>
+      <div class="stat-number" data-count="15" data-suffix="min">0</div>
       <div class="stat-label">Entraînement / jour</div>
     </div>
   </div>
 </section>
+
+<!-- Social Proof Bar -->
+<div class="social-proof reveal">
+  <div class="social-proof-inner">
+    <div class="proof-item">
+      <div class="proof-avatars">
+        <span>👩‍🎓</span><span>👨‍💻</span><span>👩‍⚕️</span><span>👨‍🏫</span>
+      </div>
+      <span><strong data-count="3247">0</strong>+ utilisateurs actifs</span>
+    </div>
+    <div class="proof-item">⭐ <strong>4.9</strong>/5 satisfaction</div>
+    <div class="proof-item">🔬 <strong>Validé</strong> par les neurosciences</div>
+    <div class="proof-item">🔒 <strong>100%</strong> sécurisé</div>
+  </div>
+</div>
 
 <!-- Features -->
 <section id="features" class="reveal">
@@ -460,6 +680,45 @@
         <input type="text" placeholder="Pose ta question mémoire…" id="demo-input" />
         <button onclick="demoChat()">Envoyer</button>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- 🎮 Interactive Memory Game -->
+<section class="game-section reveal" id="game">
+  <div class="container">
+    <div class="section-tag">🎮 Mini-Jeu</div>
+    <h2>Teste ta mémoire <span class="accent">maintenant</span></h2>
+    <p class="subtitle">Retourne les cartes et trouve les paires ! Un aperçu de l'entraînement qui t'attend.</p>
+    <div class="game-container">
+      <div class="game-header">
+        <div class="game-score">Paires : <strong id="game-pairs">0</strong>/6</div>
+        <div class="game-score">Coups : <strong id="game-moves">0</strong></div>
+        <div class="game-timer" id="game-timer">⏱ 0s</div>
+      </div>
+      <div class="game-grid" id="game-grid"></div>
+      <div class="game-result" id="game-result">
+        <h3>🎉 Bravo !</h3>
+        <p id="game-result-text"></p>
+        <button class="btn-game" onclick="initMemoryGame()">Rejouer</button>
+        <a href="/dashboard" class="btn-primary" style="margin-left: 0.75rem; font-size: 0.95rem; padding: 0.75rem 1.5rem;">Commencer l'entraînement →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ⚡ Speed Challenge -->
+<section class="challenge-section reveal" id="challenge">
+  <div class="container">
+    <div class="section-tag">⚡ Challenge</div>
+    <h2>Challenge <span class="accent">mémoire flash</span></h2>
+    <p class="subtitle">Mémorise la séquence de chiffres, puis reproduis-la ! Combien de niveaux peux-tu atteindre ?</p>
+    <div class="challenge-box">
+      <div class="challenge-levels" id="challenge-levels"></div>
+      <div class="challenge-sequence" id="challenge-seq">&nbsp;</div>
+      <input type="text" class="challenge-input" id="challenge-input" placeholder="Tape la séquence…" autocomplete="off" disabled />
+      <div class="challenge-status" id="challenge-status">Clique sur Démarrer pour jouer</div>
+      <button class="btn-game" id="challenge-btn" onclick="startChallenge()" style="margin-top: 1.25rem;">🚀 Démarrer</button>
     </div>
   </div>
 </section>
@@ -773,6 +1032,235 @@
   }, { threshold: 0.12 });
 
   document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // ── Hero Particles ──────────────────────────────────────────
+  (function createParticles() {
+    const container = document.getElementById('hero-particles');
+    if (!container) return;
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 4 + 2;
+      p.style.cssText = `
+        width: ${size}px; height: ${size}px;
+        left: ${Math.random() * 100}%;
+        bottom: -10px;
+        animation-duration: ${Math.random() * 8 + 6}s;
+        animation-delay: ${Math.random() * 5}s;
+      `;
+      container.appendChild(p);
+    }
+  })();
+
+  // ── Animated Counters (IntersectionObserver) ─────────────────
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      if (el.dataset.animated) return;
+      el.dataset.animated = 'true';
+      counterObserver.unobserve(el);
+      const target = parseInt(el.dataset.count);
+      const suffix = el.dataset.suffix || '';
+      const duration = 1200;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+  // ── Memory Card Game ────────────────────────────────────────
+  const GAME_EMOJIS = ['🧠', '🏛️', '📚', '🎯', '💡', '⚡'];
+  let gameCards = [], flippedCards = [], matchedPairs = 0, gameMoves = 0, gameTimer = null, gameSeconds = 0;
+
+  function initMemoryGame() {
+    flippedCards = []; matchedPairs = 0; gameMoves = 0; gameSeconds = 0;
+    document.getElementById('game-pairs').textContent = '0';
+    document.getElementById('game-moves').textContent = '0';
+    document.getElementById('game-timer').textContent = '⏱ 0s';
+    document.getElementById('game-result').classList.remove('show');
+    if (gameTimer) clearInterval(gameTimer);
+
+    const emojis = [...GAME_EMOJIS, ...GAME_EMOJIS];
+    gameCards = emojis.sort(() => Math.random() - 0.5);
+
+    const grid = document.getElementById('game-grid');
+    grid.innerHTML = '';
+    grid.style.display = 'grid';
+    gameCards.forEach((emoji, i) => {
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.dataset.index = i;
+      card.innerHTML = `
+        <div class="game-card-face game-card-back"></div>
+        <div class="game-card-face game-card-front">${emoji}</div>
+      `;
+      card.addEventListener('click', () => flipCard(card, emoji));
+      grid.appendChild(card);
+    });
+
+    gameTimer = setInterval(() => {
+      gameSeconds++;
+      document.getElementById('game-timer').textContent = '⏱ ' + gameSeconds + 's';
+    }, 1000);
+  }
+
+  function flipCard(card, emoji) {
+    if (flippedCards.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+    card.classList.add('flipped');
+    flippedCards.push({ card, emoji });
+
+    if (flippedCards.length === 2) {
+      gameMoves++;
+      document.getElementById('game-moves').textContent = gameMoves;
+      if (flippedCards[0].emoji === flippedCards[1].emoji) {
+        flippedCards[0].card.classList.add('matched');
+        flippedCards[1].card.classList.add('matched');
+        matchedPairs++;
+        document.getElementById('game-pairs').textContent = matchedPairs;
+        flippedCards = [];
+        if (matchedPairs === GAME_EMOJIS.length) endGame();
+      } else {
+        setTimeout(() => {
+          flippedCards[0].card.classList.remove('flipped');
+          flippedCards[1].card.classList.remove('flipped');
+          flippedCards = [];
+        }, 700);
+      }
+    }
+  }
+
+  function endGame() {
+    clearInterval(gameTimer);
+    const rating = gameMoves <= 10 ? '🏆 Mémoire exceptionnelle !' : gameMoves <= 15 ? '⭐ Très bon score !' : '💪 Bon travail !';
+    document.getElementById('game-result-text').textContent = `${rating} ${gameMoves} coups en ${gameSeconds}s.`;
+    document.getElementById('game-result').classList.add('show');
+    document.getElementById('game-grid').style.display = 'none';
+    launchConfetti();
+  }
+
+  // ── Confetti ────────────────────────────────────────────────
+  function launchConfetti() {
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+    const colors = ['#f0a500', '#ffd166', '#6c3fc5', '#8b5cf6', '#22c55e', '#ef4444', '#3b82f6'];
+    for (let i = 0; i < 60; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.cssText = `
+        left: ${Math.random() * 100}%;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        width: ${Math.random() * 8 + 5}px;
+        height: ${Math.random() * 8 + 5}px;
+        animation-duration: ${Math.random() * 2 + 1.5}s;
+        animation-delay: ${Math.random() * 0.5}s;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      `;
+      container.appendChild(piece);
+    }
+    setTimeout(() => container.remove(), 4000);
+  }
+
+  // Auto-init game when section is visible
+  let gameInitialized = false;
+  const gameObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !gameInitialized) {
+        gameInitialized = true;
+        initMemoryGame();
+        gameObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  const gameSection = document.getElementById('game');
+  if (gameSection) gameObserver.observe(gameSection);
+
+  // ── Speed Challenge ─────────────────────────────────────────
+  let challengeLevel = 0;
+  const CHALLENGE_MAX = 8;
+
+  function renderChallengeLevels() {
+    const container = document.getElementById('challenge-levels');
+    container.innerHTML = '';
+    for (let i = 0; i < CHALLENGE_MAX; i++) {
+      const el = document.createElement('span');
+      el.className = 'challenge-level' +
+        (i < challengeLevel ? ' complete' : '') +
+        (i === challengeLevel ? ' active' : '');
+      el.textContent = (i + 3) + ' chiffres';
+      container.appendChild(el);
+    }
+  }
+
+  function startChallenge() {
+    const btn = document.getElementById('challenge-btn');
+    const input = document.getElementById('challenge-input');
+    const seqEl = document.getElementById('challenge-seq');
+    const statusEl = document.getElementById('challenge-status');
+
+    btn.disabled = true;
+    input.disabled = true;
+    input.value = '';
+    statusEl.textContent = 'Mémorise la séquence...';
+    statusEl.className = 'challenge-status';
+
+    const len = challengeLevel + 3;
+    let seq = '';
+    for (let i = 0; i < len; i++) seq += Math.floor(Math.random() * 10);
+
+    seqEl.textContent = seq;
+    seqEl.style.opacity = '1';
+
+    const showTime = 1200 + (len * 300);
+    setTimeout(() => {
+      seqEl.textContent = '• '.repeat(len).trim();
+      seqEl.style.opacity = '0.3';
+      statusEl.textContent = 'Tape la séquence de mémoire !';
+      input.disabled = false;
+      input.focus();
+
+      input.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+          const answer = input.value.trim();
+          input.disabled = true;
+          input.onkeydown = null;
+
+          if (answer === seq) {
+            challengeLevel++;
+            statusEl.textContent = '✅ Correct ! Niveau ' + (challengeLevel) + '/' + CHALLENGE_MAX + ' complété !';
+            statusEl.className = 'challenge-status success';
+            if (challengeLevel >= CHALLENGE_MAX) {
+              statusEl.textContent = '🏆 Incroyable ! Tu as complété tous les niveaux !';
+              btn.textContent = '🔄 Recommencer';
+              challengeLevel = 0;
+              launchConfetti();
+            } else {
+              btn.textContent = '➡️ Niveau suivant';
+            }
+          } else {
+            statusEl.textContent = '❌ La séquence était : ' + seq;
+            statusEl.className = 'challenge-status fail';
+            btn.textContent = '🔄 Réessayer';
+            challengeLevel = 0;
+          }
+          seqEl.textContent = '\u00A0';
+          seqEl.style.opacity = '1';
+          btn.disabled = false;
+          renderChallengeLevels();
+        }
+      };
+    }, showTime);
+  }
+
+  renderChallengeLevels();
 </script>
 
 </body>
